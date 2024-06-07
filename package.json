@@ -1,0 +1,20 @@
+{
+  "name": "clean-architecture-playground-with-nodejs",
+  "version": "1.0.0",
+  "description": "Project to learn the concepts of clean architecture",
+  "scripts": {
+    "dev": "tsx watch src/main/server.ts",
+    "test": "vitest"
+  },
+  "keywords": [],
+  "author": "dougecomp",
+  "license": "ISC",
+  "devDependencies": {
+    "tsx": "^4.13.2",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "fastify": "^4.27.0"
+  }
+}
