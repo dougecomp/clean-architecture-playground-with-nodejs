@@ -3,18 +3,26 @@
   "version": "1.0.0",
   "description": "Project to learn the concepts of clean architecture",
   "scripts": {
-    "dev": "tsx watch src/main/server.ts",
+    "dev": "tsx watch src/main/bootstrap-http-server.ts",
     "test": "vitest"
   },
   "keywords": [],
   "author": "dougecomp",
   "license": "ISC",
   "devDependencies": {
+    "@eslint/js": "^9.4.0",
+    "@types/express": "^4.17.21",
+    "eslint": "^8.56.0",
+    "globals": "^15.4.0",
     "tsx": "^4.13.2",
     "typescript": "^5.4.5",
+    "typescript-eslint": "^7.12.0",
     "vitest": "^1.6.0"
   },
   "dependencies": {
+    "@fastify/cors": "^9.0.1",
+    "@hapi/hapi": "^21.3.9",
+    "express": "^4.19.2",
     "fastify": "^4.27.0"
   }
 }
