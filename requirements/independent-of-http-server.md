@@ -1,10 +1,14 @@
 # Indepentent of http server
 
 This project should not be coupled to any http server library like express, hapi, fastify.
-I want to be able to change the http server easily.
+The change of http server should require low effort.
 
-## Common http server features
+## Http server features
 
-1. register middlewares
-2. register routes
-3. start server
+1. Register a middleware
+2. Register a route
+   1. With query params
+   2. With named params
+   3. With body
+   4. With headers
+3. Listen to http requests
