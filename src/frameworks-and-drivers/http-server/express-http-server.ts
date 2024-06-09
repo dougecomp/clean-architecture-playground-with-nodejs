@@ -1,3 +1,5 @@
+import { Server } from 'node:http'
+
 import express, {Express, Request, Response} from 'express'
 
 import { HttpController } from "../../interface-adapters/controllers/http/http-controller";
@@ -11,6 +13,7 @@ export class ExpressHttpServer implements HttpServer {
     
   ) {
     this.httpServer = express()
+    this.httpServer.use(express.json())
   }
 
   async register(method: HTTP_VERBS, route: string, controller: HttpController<any, any>): Promise<void> {
@@ -26,8 +29,8 @@ export class ExpressHttpServer implements HttpServer {
       .send(httpResponse.body)
     })
   }
-  async start(port: number): Promise<void> {
-    this.httpServer.listen(port)
+  async start(port: number): Promise<Server> {
+    return this.httpServer.listen(port)
   }
   
 }
