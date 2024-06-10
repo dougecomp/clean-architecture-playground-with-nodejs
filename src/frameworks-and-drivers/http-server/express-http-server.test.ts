@@ -5,7 +5,6 @@ import { MockProxy, mock } from 'vitest-mock-extended'
 import { ExpressHttpServer } from "../http-server/express-http-server"
 import { HTTP_VERBS } from "../../interface-adapters/controllers/http/helpers"
 import { HttpController } from "../../interface-adapters/controllers/http/http-controller"
-import { HttpCallback } from './http-server'
 import { Mock } from 'vitest'
 
 describe('Http Server with Express', () => {
