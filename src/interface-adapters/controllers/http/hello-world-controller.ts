@@ -1,13 +1,17 @@
-import { ok } from "./helpers";
-import { HttpController, HttpResponse } from "./http-controller";
+import { HttpResponse, ok } from "./helpers";
+import { HttpController } from "./http-controller";
 
 export interface HelloWorldControllerInput {
   name: string
 }
 
-export class HelloWorldController implements HttpController<HelloWorldControllerInput, string> {
+export interface HelloWorldControllerOutput {
+  message: string
+}
+
+export class HelloWorldController implements HttpController<HelloWorldControllerInput> {
   async handle (request: HelloWorldControllerInput): Promise<HttpResponse> {
-    return ok({
+    return ok<HelloWorldControllerOutput>({
       message: `Hello World ${request.name}!`
     })
   }

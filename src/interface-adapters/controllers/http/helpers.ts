@@ -11,7 +11,7 @@ export interface HttpResponse<T = any> {
   statusCode: number
 }
 
-export function ok (body: any): HttpResponse {
+export function ok<T> (body: T): HttpResponse {
   return {
     statusCode: 200,
     body
