@@ -1,17 +1,34 @@
+import { Server } from 'node:http'
+
 import { MockProxy, mock } from 'vitest-mock-extended'
 
-import { ExpressHttpServer } from "../frameworks-and-drivers/http-server/express-http-server"
-import { HTTP_VERBS } from "../interface-adapters/controllers/http/helpers"
-import { HttpController } from "../interface-adapters/controllers/http/http-controller"
+import { ExpressHttpServer } from "../http-server/express-http-server"
+import { HTTP_VERBS } from "../../interface-adapters/controllers/http/helpers"
+import { HttpController } from "../../interface-adapters/controllers/http/http-controller"
 
 describe('Http Server with Express', () => {
-  test('return ok if is listening and route exists', async () => {
-    const httpServer = new ExpressHttpServer()
-    const controller: MockProxy<HttpController> = mock<HttpController>()
+  let controller: MockProxy<HttpController>
+  let server: Server
+  let httpServer = new ExpressHttpServer()
+
+  beforeEach(() => {
+    controller = mock<HttpController>()
     controller.handle.mockResolvedValue({ statusCode: 200, body: '' })
+    httpServer = new ExpressHttpServer()
+  })
+
+  test('return not found if is listening and route does not exist', async () => {
+    server = await httpServer.start(9999)
+    const response = await fetch(`http://localhost:9999/any_route`)
+
+    expect(response.status).toBe(404)
+
+    server.close()
+  })
+  test('return controller response if is listening and route exists', async () => {
     httpServer.register(HTTP_VERBS.GET, '/any_route', controller)
 
-    const server = await httpServer.start(9999)
+    server = await httpServer.start(9999)
     const response = await fetch(`http://localhost:9999/any_route`)
 
     expect(response.status).toBe(200)
@@ -20,12 +37,9 @@ describe('Http Server with Express', () => {
   })
 
   test('can forward query params to controller', async () => {
-    const httpServer = new ExpressHttpServer()
-    const controller: MockProxy<HttpController> = mock<HttpController>()
-    controller.handle.mockResolvedValue({ statusCode: 200, body: '' })
     httpServer.register(HTTP_VERBS.GET, '/any_route', controller)
 
-    const server = await httpServer.start(9999)
+    server = await httpServer.start(9999)
     await fetch(`http://localhost:9999/any_route?name=any_name`)
 
     expect(controller.handle)
@@ -40,12 +54,9 @@ describe('Http Server with Express', () => {
   })
 
   test('can forward named params to controller', async () => {
-    const httpServer = new ExpressHttpServer()
-    const controller: MockProxy<HttpController> = mock<HttpController>()
-    controller.handle.mockResolvedValue({ statusCode: 200, body: '' })
     httpServer.register(HTTP_VERBS.GET, '/any_route/:name', controller)
 
-    const server = await httpServer.start(9999)
+    server = await httpServer.start(9999)
     await fetch(`http://localhost:9999/any_route/any_name`)
 
     expect(controller.handle)
@@ -59,13 +70,10 @@ describe('Http Server with Express', () => {
     server.close()
   })
 
-  test('can forward a body to controller through post request', async () => {
-    const httpServer = new ExpressHttpServer()
-    const controller: MockProxy<HttpController> = mock<HttpController>()
-    controller.handle.mockResolvedValue({ statusCode: 200, body: '' })
+  test('can forward a body to controller through POST request', async () => {
     httpServer.register(HTTP_VERBS.POST, '/any_route', controller)
 
-    const server = await httpServer.start(9999)
+    server = await httpServer.start(9999)
     await fetch(`http://localhost:9999/any_route`, {
       method: HTTP_VERBS.POST,
       body: JSON.stringify({ name: 'any_name' }),
