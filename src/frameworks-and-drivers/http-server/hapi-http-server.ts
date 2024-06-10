@@ -2,8 +2,9 @@ import { Server } from 'node:http'
 
 import { Server as HapiServer, server } from '@hapi/hapi'
 
-import { HttpController, HttpResponse } from "../../interface-adapters/controllers/http/http-controller";
+import { HttpController } from "../../interface-adapters/controllers/http/http-controller";
 import { HttpServer } from "./http-server";
+import { HttpResponse } from '../../interface-adapters/controllers/http/helpers';
 
 export class HapiHttpServer implements HttpServer {
   private httpServer: HapiServer
@@ -40,9 +41,9 @@ export class HapiHttpServer implements HttpServer {
       path: route.replace(/\:/g, ""),
       handler: async (request, response) => {
         const httpResponse = await callback(
-          request.payload as any,
-          request.params,
-          request.query,
+          request.payload || {},
+          request.params  || {},
+          request.query  || {},
           request.headers
         )
         return response
