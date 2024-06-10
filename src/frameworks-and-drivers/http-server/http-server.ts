@@ -8,7 +8,7 @@ export interface HttpCallback {
 }
 
 export interface HttpServer {
-  registerController(method: HTTP_VERBS, route: string, controller: HttpController): Promise<void>
+  registerController(method: HTTP_VERBS, route: string, controller: HttpController): void
   registerCallback(method: HTTP_VERBS, route: string, callback: HttpCallback): void
   start(port: number): Promise<Server>
 }

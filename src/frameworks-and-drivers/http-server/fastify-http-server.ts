@@ -22,7 +22,7 @@ export class FastifyHttpServer implements HttpServer {
     this.httpServer.register(cors)
   }
 
-  async registerController (method: HTTP_VERBS, route: string, httpController: HttpController): Promise<void> {
+  registerController (method: HTTP_VERBS, route: string, httpController: HttpController): void {
     this.httpServer.route({
       method: method,
       url: route.replace(/\{|\}/g, ""),

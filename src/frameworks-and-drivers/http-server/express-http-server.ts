@@ -16,7 +16,7 @@ export class ExpressHttpServer implements HttpServer {
     this.httpServer.use(express.json())
   }
 
-  async registerController(method: HTTP_VERBS, route: string, controller: HttpController): Promise<void> {
+  registerController(method: HTTP_VERBS, route: string, controller: HttpController): void {
     this.httpServer[method](route.replace(/\{|\}/g, ""), async (req: Request, res: Response) => {
       const httpResponse = await controller.handle({
         ...req.body as any,

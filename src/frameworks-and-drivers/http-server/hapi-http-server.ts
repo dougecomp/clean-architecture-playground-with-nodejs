@@ -17,7 +17,7 @@ export class HapiHttpServer implements HttpServer {
     })
   }
 
-  async registerController(method: string, route: string, controller: HttpController<any, any>): Promise<void> {
+  registerController(method: string, route: string, controller: HttpController<any, any>): void {
     this.httpServer.route({
       method: method as any,
       path: route.replace(/\:/g, ""),
