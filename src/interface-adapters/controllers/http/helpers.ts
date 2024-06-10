@@ -1,4 +1,15 @@
-import { HttpResponse } from "./http-controller";
+export enum HTTP_VERBS {
+  GET = 'get',
+  POST = 'post',
+  PUT = 'put',
+  PATCH = 'patch',
+  DELETE = 'delete'
+}
+
+export interface HttpResponse<T = any> {
+  body?: T
+  statusCode: number
+}
 
 export function ok (body: any): HttpResponse {
   return {
@@ -14,10 +25,7 @@ export function serverError (): HttpResponse {
   }
 }
 
-export enum HTTP_VERBS {
-  GET = 'get',
-  POST = 'post',
-  PUT = 'put',
-  PATCH = 'patch',
-  DELETE = 'delete'
+
+export interface HttpCallback {
+  (body: any, params: any, query: any, headers: any): Promise<HttpResponse>
 }

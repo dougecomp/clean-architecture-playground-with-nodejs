@@ -1,7 +1,4 @@
-export interface HttpResponse<T = any> {
-  body?: T
-  statusCode: number
-}
+import { HttpResponse } from "./helpers";
 
 export interface HttpController<T = any, U = any> {
   handle: (request: T) => Promise<HttpResponse<U>>
