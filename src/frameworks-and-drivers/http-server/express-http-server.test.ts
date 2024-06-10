@@ -164,7 +164,7 @@ describe('Http Server with Express', () => {
       expect(response.status).toBe(400)
     })
 
-    test('controller not handled if statusCode of preController is not 200', async () => {
+    test('controller not execute if statusCode of preController is not 200', async () => {
       const preController = mock<HttpController>()
       preController.handle.mockResolvedValue({ statusCode: 400, body: '' })
       sut.registerControllerV2({
