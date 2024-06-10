@@ -44,6 +44,7 @@ export class ExpressHttpServer implements HttpServer {
           .status(httpResponse.statusCode)
           .send(httpResponse.body)
         }
+        Object.assign(req, httpResponse.body)
         next()
       }
       next()
