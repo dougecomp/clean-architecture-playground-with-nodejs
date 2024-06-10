@@ -133,7 +133,7 @@ describe('Http Server with Express', () => {
   
       expect(callback)
         .toBeCalledWith(
-          expect.anything(),
+          {},
           { name: 'any_name' },
           {},
           expect.anything()
