@@ -193,7 +193,11 @@ describe('Http Server with Express', () => {
     })
 
     test('return callback response if is listening and route exists', async () => {
-      sut.registerCallback(HTTP_VERBS.GET, '/any_route', callback)
+      sut.registerCallbackV2({
+        method: HTTP_VERBS.GET,
+        route: '/any_route',
+        callback: callback
+      })
 
       server = await sut.start(9999)
       const response = await fetch(`http://localhost:9999/any_route`)
@@ -202,7 +206,11 @@ describe('Http Server with Express', () => {
     })
     
     test('can forward query params to callback', async () => {
-      sut.registerCallback(HTTP_VERBS.GET, '/any_route', callback)
+      sut.registerCallbackV2({
+        method: HTTP_VERBS.GET,
+        route: '/any_route',
+        callback: callback
+      })
 
       server = await sut.start(9999)
       await fetch(`http://localhost:9999/any_route?name=any_name`)
@@ -217,7 +225,11 @@ describe('Http Server with Express', () => {
     })
 
     test('can forward named params to callback', async () => {
-      sut.registerCallback(HTTP_VERBS.GET, '/any_route/:name', callback)
+      sut.registerCallbackV2({
+        method: HTTP_VERBS.GET,
+        route: '/any_route/:name',
+        callback: callback
+      })
 
       server = await sut.start(9999)
       await fetch(`http://localhost:9999/any_route/any_name`)
@@ -232,7 +244,11 @@ describe('Http Server with Express', () => {
     })
 
     test('can forward a body to callback through POST request', async () => {
-      sut.registerCallback(HTTP_VERBS.POST, '/any_route', callback)
+      sut.registerCallbackV2({
+        method: HTTP_VERBS.POST,
+        route: '/any_route',
+        callback: callback
+      })
 
       server = await sut.start(9999)
       await fetch(`http://localhost:9999/any_route`, {
@@ -248,6 +264,67 @@ describe('Http Server with Express', () => {
           {},
           expect.anything()
         )
+    })
+
+    test('callback can get body from preCallback', async () => {
+      const preCallback: Mock = vi.fn()
+      preCallback.mockResolvedValue({ statusCode: 200, body: {name: 'any_name'} })
+      sut.registerCallbackV2({
+        method: HTTP_VERBS.GET,
+        route: '/any_route',
+        callback,
+        preCallback
+      })
+  
+      server = await sut.start(9999)
+      await fetch(`http://localhost:9999/any_route`, {
+        method: HTTP_VERBS.GET,
+      })
+
+      expect(callback)
+        .toBeCalledWith(
+          { name: 'any_name' },
+          {},
+          {},
+          expect.anything()
+        )
+    })
+
+    test('return http response from preCallback if statusCode is not 200', async () => {
+      const preCallback: Mock = vi.fn()
+      preCallback.mockResolvedValue({ statusCode: 400, body: '' })
+      sut.registerCallbackV2({
+        method: HTTP_VERBS.GET,
+        route: '/any_route',
+        callback,
+        preCallback
+      })
+  
+      server = await sut.start(9999)
+      const response = await fetch(`http://localhost:9999/any_route`, {
+        method: HTTP_VERBS.GET,
+      })
+
+      expect(response.status).toBe(400)
+    })
+
+    test('callback not execute if statusCode of preCallback is not 200', async () => {
+      const preCallback: Mock = vi.fn()
+      preCallback.mockResolvedValue({ statusCode: 400, body: '' })
+      sut.registerCallbackV2({
+        method: HTTP_VERBS.GET,
+        route: '/any_route',
+        callback,
+        preCallback
+      })
+  
+      server = await sut.start(9999)
+      const response = await fetch(`http://localhost:9999/any_route`, {
+        method: HTTP_VERBS.GET,
+      })
+
+      expect(preCallback).toHaveBeenCalledOnce()
+      expect(callback).not.toHaveBeenCalled()
     })
   })
 })
