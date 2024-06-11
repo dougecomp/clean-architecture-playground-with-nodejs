@@ -3,7 +3,7 @@ import { Server } from 'node:http'
 import Fastify, { FastifyInstance } from "fastify"
 import cors from '@fastify/cors'
 
-import { HttpServer, RegisterCallback, RegisterControllerInput } from "./http-server"
+import { HttpServer, RegisterCallbackInput, RegisterControllerInput } from "./http-server"
 
 export class FastifyHttpServer implements HttpServer {
   private httpServer: FastifyInstance
@@ -57,7 +57,7 @@ export class FastifyHttpServer implements HttpServer {
     })
   }
 
-  registerCallback({method, route, callback, preCallback}: RegisterCallback): void {
+  registerCallback({method, route, callback, preCallback}: RegisterCallbackInput): void {
     this.httpServer.route({
       method: method,
       url: route.replace(/\{|\}/g, ""),
