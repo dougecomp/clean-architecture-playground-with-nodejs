@@ -46,16 +46,7 @@ export class ExpressHttpServer implements HttpServer {
     })
   }
 
-  registerCallback(method: HTTP_VERBS, route: string, callback: HttpCallback): void {
-    this.httpServer[method](route.replace(/\{|\}/g, ""), async (req: Request, res: Response) => {
-      const response = await callback(req.body, req.params, req.query, req.headers)
-      res
-      .status(response.statusCode)
-      .send(response.body)
-    })
-  }
-
-  registerCallbackV2({method, route, callback, preCallback}: RegisterCallbackV2): void {
+  registerCallback({method, route, callback, preCallback}: RegisterCallbackV2): void {
     this.httpServer[method](route.replace(/\{|\}/g, ""), async (req, res, next) => {
       if (preCallback) {
         const httpResponse = await preCallback(

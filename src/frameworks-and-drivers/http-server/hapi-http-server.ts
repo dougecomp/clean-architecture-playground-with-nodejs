@@ -1,11 +1,10 @@
-import { Server } from 'node:http'
+import { Server } from 'node:http';
 
-import { Server as HapiServer, server } from '@hapi/hapi'
-import Boom from '@hapi/boom'
+import Boom from '@hapi/boom';
+import { Server as HapiServer, server } from '@hapi/hapi';
 
-import { HttpController } from "../../interface-adapters/controllers/http/http-controller";
+import { HttpResponse } from '../../interface-adapters/controllers/http/helpers';
 import { HttpServer, RegisterCallbackV2, RegisterControllerInput } from "./http-server";
-import { HTTP_VERBS, HttpResponse } from '../../interface-adapters/controllers/http/helpers';
 
 export class HapiHttpServer implements HttpServer {
   private httpServer: HapiServer
@@ -81,26 +80,7 @@ export class HapiHttpServer implements HttpServer {
     })
   }
 
-
-  registerCallback(method: string, route: string, callback: (body: any, params: any, query: any, headers: any) => Promise<HttpResponse>): void {
-    this.httpServer.route({
-      method: method as any,
-      path: route.replace(/\:/g, ""),
-      handler: async (request, response) => {
-        const httpResponse = await callback(
-          request.payload || {},
-          request.params  || {},
-          request.query  || {},
-          request.headers
-        )
-        return response
-          .response(httpResponse.body)
-          .code(httpResponse.statusCode)
-      }
-    })
-  }
-
-  registerCallbackV2({ method, route, callback, preCallback }: RegisterCallbackV2): void {
+  registerCallback({ method, route, callback, preCallback }: RegisterCallbackV2): void {
     const assign = `preCallback_${method}_${route}`
     this.httpServer.route({
       method: method as any,
