@@ -3,9 +3,9 @@ import { FastifyHttpServerFactory } from "./fastify-http-server-factory";
 import { HapiHttpServerFactory } from "./hapi-http-server";
 import { setupRoutes } from "./routes/routes";
 
+const httpServerFactory = new ExpressHttpServerFactory()
 // const httpServerFactory = new FastifyHttpServerFactory()
 // const httpServerFactory = new HapiHttpServerFactory()
-const httpServerFactory = new ExpressHttpServerFactory()
 const httpServer = httpServerFactory.makeHttpServer()
 
 setupRoutes(httpServer)
