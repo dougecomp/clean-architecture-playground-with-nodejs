@@ -90,6 +90,63 @@ describe('Http Server with Hapi', () => {
           )
         )
     })
+
+    test('can run a preController before the controller', async () => {
+      const preController = mock<HttpController>()
+      preController.handle.mockResolvedValue({ statusCode: 200, body: '' })
+      sut.registerControllerV2({
+        method: HTTP_VERBS.GET,
+        route: '/any_route',
+        controller,
+        preController
+      })
+  
+      server = await sut.start(9999)
+      await fetch(`http://localhost:9999/any_route`, {
+        method: HTTP_VERBS.GET,
+      })
+
+      expect(preController.handle).toHaveBeenCalledOnce()
+      expect(controller.handle).toHaveBeenCalledOnce()
+    })
+
+    test('controller can get body from preController', async () => {
+      const preController = mock<HttpController>()
+      preController.handle.mockResolvedValue({ statusCode: 200, body: { name: 'any_name'} })
+      sut.registerControllerV2({
+        method: HTTP_VERBS.GET,
+        route: '/any_route',
+        controller,
+        preController
+      })
+  
+      server = await sut.start(9999)
+      await fetch(`http://localhost:9999/any_route`, {
+        method: HTTP_VERBS.GET,
+      })
+
+      expect(controller.handle).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'any_name' })
+      )
+    })
+
+    test('return http response from preController if statusCode is not 200', async () => {
+      const preController = mock<HttpController>()
+      preController.handle.mockResolvedValue({ statusCode: 400, body: '' })
+      sut.registerControllerV2({
+        method: HTTP_VERBS.GET,
+        route: '/any_route',
+        controller,
+        preController
+      })
+  
+      server = await sut.start(9999)
+      const response = await fetch(`http://localhost:9999/any_route`, {
+        method: HTTP_VERBS.GET,
+      })
+
+      expect(response.status).toBe(400)
+    })
   })
 
   describe('route registration through a callback', () => {
