@@ -4,7 +4,7 @@ import { Server as HapiServer, server } from '@hapi/hapi'
 import Boom from '@hapi/boom'
 
 import { HttpController } from "../../interface-adapters/controllers/http/http-controller";
-import { HttpServer, RegisterControllerInput } from "./http-server";
+import { HttpServer, RegisterCallbackV2, RegisterControllerInput } from "./http-server";
 import { HTTP_VERBS, HttpResponse } from '../../interface-adapters/controllers/http/helpers';
 
 export class HapiHttpServer implements HttpServer {
@@ -15,6 +15,12 @@ export class HapiHttpServer implements HttpServer {
       debug: {
         log: 'debug'
       }
+    })
+    this.httpServer.ext('onPreResponse', (request, response) => {
+      if (request.response && request.response instanceof Boom.Boom && request.response.isBoom) {
+        return response.response(request.response.output.payload).code(request.response.output.statusCode);
+      }
+      return response.continue;
     })
   }
 
@@ -86,6 +92,59 @@ export class HapiHttpServer implements HttpServer {
           request.params  || {},
           request.query  || {},
           request.headers
+        )
+        return response
+          .response(httpResponse.body)
+          .code(httpResponse.statusCode)
+      }
+    })
+  }
+
+  registerCallbackV2({ method, route, callback, preCallback }: RegisterCallbackV2): void {
+    const assign = `preCallback_${method}_${route}`
+    this.httpServer.route({
+      method: method as any,
+      path: route.replace(/\:/g, ""),
+      options: {
+        pre: [
+          {
+            method: async (req, res) => {
+              if (!preCallback) return res.continue
+              const httpResponse = await preCallback(
+                req.payload || {},
+                req.params  || {},
+                req.query  || {},
+                req.headers
+              )
+              let error: Boom.Boom | null = null
+              if (httpResponse.statusCode >= 500) {
+                error = Boom.badImplementation<Boom.Boom>(httpResponse.body)
+                error.output.statusCode = httpResponse.statusCode
+              }
+              if (httpResponse.statusCode >= 400) {
+                error = Boom.badRequest<Boom.Boom>(httpResponse.body)
+                error.output.statusCode = httpResponse.statusCode
+              }
+              if (error) {
+                throw error
+              }
+              return httpResponse.body
+            },
+            assign
+          }
+        ],
+      },
+      handler: async (request, response) => {
+        const body = {
+          ...request.payload as any || {},
+          ...request.pre[assign]
+        }
+        const httpResponse = await callback(
+          body,
+          request.params  || {},
+          request.query  || {},
+          request.headers,
+          
         )
         return response
           .response(httpResponse.body)
