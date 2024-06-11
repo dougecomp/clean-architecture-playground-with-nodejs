@@ -3,7 +3,7 @@ import { Server } from 'node:http'
 import Fastify, { FastifyInstance } from "fastify"
 import cors from '@fastify/cors'
 
-import { HttpServer, RegisterControllerV2 } from "./http-server"
+import { HttpServer, RegisterControllerInput } from "./http-server"
 import { HttpController } from "../../interface-adapters/controllers/http/http-controller"
 import { HTTP_VERBS, HttpResponse } from '../../interface-adapters/controllers/http/helpers'
 
@@ -22,7 +22,7 @@ export class FastifyHttpServer implements HttpServer {
     this.httpServer.register(cors)
   }
 
-  registerController({ method, route, controller, preController }: RegisterControllerV2): void {
+  registerController({ method, route, controller, preController }: RegisterControllerInput): void {
     this.httpServer.route({
       method: method,
       url: route.replace(/\{|\}/g, ""),

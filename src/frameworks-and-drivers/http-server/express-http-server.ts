@@ -4,7 +4,7 @@ import express, { Express, Request, Response } from 'express';
 
 import { HTTP_VERBS } from '../../interface-adapters/controllers/http/helpers';
 import { HttpController } from "../../interface-adapters/controllers/http/http-controller";
-import { HttpCallback, HttpServer, RegisterControllerV2 } from "./http-server";
+import { HttpCallback, HttpServer, RegisterControllerInput } from "./http-server";
 
 export class ExpressHttpServer implements HttpServer {
   private httpServer: Express
@@ -16,7 +16,7 @@ export class ExpressHttpServer implements HttpServer {
     this.httpServer.use(express.json())
   }
   
-  registerController({ method, route, controller, preController }: RegisterControllerV2): void {
+  registerController({ method, route, controller, preController }: RegisterControllerInput): void {
     this.httpServer[method](route.replace(/\{|\}/g, ""), async (req: Request, res: Response, next) => {
       if (preController) {
         const httpResponse = await preController.handle({

@@ -7,7 +7,7 @@ export interface HttpCallback {
   (body: any, params: any, query: any, headers: any): Promise<HttpResponse>
 }
 
-export interface RegisterControllerV2 {
+export interface RegisterControllerInput {
   method: HTTP_VERBS,
   route: string,
   controller: HttpController,
@@ -15,7 +15,7 @@ export interface RegisterControllerV2 {
 }
 
 export interface HttpServer {
-  registerController(input: RegisterControllerV2): void
+  registerController(input: RegisterControllerInput): void
   registerCallback(method: HTTP_VERBS, route: string, callback: HttpCallback): void
   start(port: number): Promise<Server>
 }

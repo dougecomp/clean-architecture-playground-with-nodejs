@@ -4,7 +4,7 @@ import { Server as HapiServer, server } from '@hapi/hapi'
 import Boom from '@hapi/boom'
 
 import { HttpController } from "../../interface-adapters/controllers/http/http-controller";
-import { HttpServer, RegisterControllerV2 } from "./http-server";
+import { HttpServer, RegisterControllerInput } from "./http-server";
 import { HTTP_VERBS, HttpResponse } from '../../interface-adapters/controllers/http/helpers';
 
 export class HapiHttpServer implements HttpServer {
@@ -18,7 +18,7 @@ export class HapiHttpServer implements HttpServer {
     })
   }
 
-  registerController({ method, route, controller, preController }: RegisterControllerV2): void {
+  registerController({ method, route, controller, preController }: RegisterControllerInput): void {
     const assign = `preController_${method}_${route}`
     this.httpServer.route({
       method: method,
