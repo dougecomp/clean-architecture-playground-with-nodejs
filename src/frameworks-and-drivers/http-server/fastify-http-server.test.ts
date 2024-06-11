@@ -32,7 +32,7 @@ describe('Http Server with Express', () => {
   describe('route registration through an controller', () => {
     
     test('return controller response if is listening and route exists', async () => {
-      sut.registerControllerV2({
+      sut.registerController({
         method: HTTP_VERBS.GET,
         route: '/any_route',
         controller
@@ -45,7 +45,7 @@ describe('Http Server with Express', () => {
     })
   
     test('can forward query params to controller', async () => {
-      sut.registerControllerV2({
+      sut.registerController({
         method: HTTP_VERBS.GET,
         route: '/any_route',
         controller
@@ -64,7 +64,7 @@ describe('Http Server with Express', () => {
     })
   
     test('can forward named params to controller', async () => {
-      sut.registerControllerV2({
+      sut.registerController({
         method: HTTP_VERBS.GET,
         route: '/any_route/:name',
         controller
@@ -83,7 +83,7 @@ describe('Http Server with Express', () => {
     })
   
     test('can forward a body to controller through POST request', async () => {
-      sut.registerControllerV2({
+      sut.registerController({
         method: HTTP_VERBS.POST,
         route: '/any_route',
         controller
@@ -110,7 +110,7 @@ describe('Http Server with Express', () => {
     test('can run a preController before the controller', async () => {
       const preController = mock<HttpController>()
       preController.handle.mockResolvedValue({ statusCode: 200, body: '' })
-      sut.registerControllerV2({
+      sut.registerController({
         method: HTTP_VERBS.GET,
         route: '/any_route',
         controller,
@@ -129,7 +129,7 @@ describe('Http Server with Express', () => {
     test('controller can get body from preController', async () => {
       const preController = mock<HttpController>()
       preController.handle.mockResolvedValue({ statusCode: 200, body: { name: 'any_name'} })
-      sut.registerControllerV2({
+      sut.registerController({
         method: HTTP_VERBS.GET,
         route: '/any_route',
         controller,
@@ -149,7 +149,7 @@ describe('Http Server with Express', () => {
     test('return http response from preController if statusCode is not 200', async () => {
       const preController = mock<HttpController>()
       preController.handle.mockResolvedValue({ statusCode: 400, body: '' })
-      sut.registerControllerV2({
+      sut.registerController({
         method: HTTP_VERBS.GET,
         route: '/any_route',
         controller,
@@ -167,7 +167,7 @@ describe('Http Server with Express', () => {
     test('controller not execute if statusCode of preController is not 200', async () => {
       const preController = mock<HttpController>()
       preController.handle.mockResolvedValue({ statusCode: 400, body: '' })
-      sut.registerControllerV2({
+      sut.registerController({
         method: HTTP_VERBS.GET,
         route: '/any_route',
         controller,

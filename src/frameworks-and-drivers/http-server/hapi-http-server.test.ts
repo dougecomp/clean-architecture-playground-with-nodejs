@@ -32,7 +32,11 @@ describe('Http Server with Hapi', () => {
   describe('route registration through an controller', () => {
     
     test('return controller response if is listening and route exists', async () => {
-      sut.registerController(HTTP_VERBS.GET, '/any_route', controller)
+      sut.registerController({
+        method: HTTP_VERBS.GET,
+        route: '/any_route',
+        controller: controller
+      })
   
       server = await sut.start(9999)
       const response = await fetch(`http://localhost:9999/any_route`)
@@ -41,7 +45,11 @@ describe('Http Server with Hapi', () => {
     })
   
     test('can forward query params to controller', async () => {
-      sut.registerController(HTTP_VERBS.GET, '/any_route', controller)
+      sut.registerController({
+        method: HTTP_VERBS.GET,
+        route: '/any_route',
+        controller: controller
+      })
   
       server = await sut.start(9999)
       await fetch(`http://localhost:9999/any_route?name=any_name`)
@@ -56,7 +64,11 @@ describe('Http Server with Hapi', () => {
     })
   
     test('can forward named params to controller', async () => {
-    sut.registerController(HTTP_VERBS.GET, '/any_route/{name}', controller)
+    sut.registerController({
+      method: HTTP_VERBS.GET,
+      route: '/any_route/{name}',
+      controller: controller
+    })
   
       server = await sut.start(9999)
       await fetch(`http://localhost:9999/any_route/any_name`)
@@ -71,7 +83,11 @@ describe('Http Server with Hapi', () => {
     })
   
     test('can forward a body to controller through POST request', async () => {
-      sut.registerController(HTTP_VERBS.POST, '/any_route', controller)
+      sut.registerController({
+        method: HTTP_VERBS.POST,
+        route: '/any_route',
+        controller: controller
+      })
   
       server = await sut.start(9999)
       await fetch(`http://localhost:9999/any_route`, {
@@ -94,7 +110,7 @@ describe('Http Server with Hapi', () => {
     test('can run a preController before the controller', async () => {
       const preController = mock<HttpController>()
       preController.handle.mockResolvedValue({ statusCode: 200, body: '' })
-      sut.registerControllerV2({
+      sut.registerController({
         method: HTTP_VERBS.GET,
         route: '/any_route',
         controller,
@@ -113,7 +129,7 @@ describe('Http Server with Hapi', () => {
     test('controller can get body from preController', async () => {
       const preController = mock<HttpController>()
       preController.handle.mockResolvedValue({ statusCode: 200, body: { name: 'any_name'} })
-      sut.registerControllerV2({
+      sut.registerController({
         method: HTTP_VERBS.GET,
         route: '/any_route',
         controller,
@@ -133,7 +149,7 @@ describe('Http Server with Hapi', () => {
     test('return http response from preController if statusCode is not 200', async () => {
       const preController = mock<HttpController>()
       preController.handle.mockResolvedValue({ statusCode: 400, body: '' })
-      sut.registerControllerV2({
+      sut.registerController({
         method: HTTP_VERBS.GET,
         route: '/any_route',
         controller,
