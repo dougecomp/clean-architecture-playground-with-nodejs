@@ -1,10 +1,11 @@
 import { Server } from 'node:http'
 
 import { Server as HapiServer, server } from '@hapi/hapi'
+import Boom from '@hapi/boom'
 
 import { HttpController } from "../../interface-adapters/controllers/http/http-controller";
-import { HttpServer } from "./http-server";
-import { HttpResponse } from '../../interface-adapters/controllers/http/helpers';
+import { HttpServer, RegisterControllerV2 } from "./http-server";
+import { HTTP_VERBS, HttpResponse } from '../../interface-adapters/controllers/http/helpers';
 
 export class HapiHttpServer implements HttpServer {
   private httpServer: HapiServer
@@ -17,9 +18,9 @@ export class HapiHttpServer implements HttpServer {
     })
   }
 
-  registerController(method: string, route: string, controller: HttpController<any, any>): void {
+  registerController(method: HTTP_VERBS, route: string, controller: HttpController<any, any>): void {
     this.httpServer.route({
-      method: method as any,
+      method: method,
       path: route.replace(/\:/g, ""),
       handler: async (request, response) => {
         const httpResponse = await controller.handle({
@@ -34,6 +35,67 @@ export class HapiHttpServer implements HttpServer {
       }
     })
   }
+
+  registerControllerV2({ method, route, controller, preController }: RegisterControllerV2): void {
+    const assign = `preController_${method}_${route}`
+    this.httpServer.route({
+      method: method,
+      path: route.replace(/\{|\}/g, ""),
+      options: {
+        plugins: {
+
+        },
+        pre: [
+          {
+            method: async (req, res) => {
+              if (!preController) return res.continue              
+              const httpResponse = await preController.handle({
+                ...req.payload as any || {},
+                ...req.query || {},
+                ...req.params || {},
+                ...req.headers || {}
+              })
+              let error: Boom.Boom | null = null
+              if (httpResponse.statusCode >= 500) {
+                error = Boom.badImplementation<Boom.Boom>(httpResponse.body)
+                error.output.statusCode = httpResponse.statusCode
+              }
+              if (httpResponse.statusCode >= 400) {
+                error = Boom.badRequest<Boom.Boom>(httpResponse.body)
+                error.output.statusCode = httpResponse.statusCode
+              }
+              if (error) {
+                throw error
+              }
+              return httpResponse.body
+            
+            },
+            assign
+          }
+        ]
+      },
+      handler: async (request, response) => {
+        const httpResponse = await controller.handle({
+          ...request.payload as object || {},
+          ...request.params || {},
+          ...request.query || {},
+          ...request.headers || {},
+          ...request.pre[assign]
+        })
+        
+        return response
+          .response(httpResponse.body)
+          .code(httpResponse.statusCode)
+      }
+    })
+    this.httpServer.ext('onPreResponse', (request, response) => {
+      if (request.response && request.response instanceof Boom.Boom && request.response.isBoom) {
+        return response.response(request.response.output.payload).code(request.response.output.statusCode);
+      }
+      return response.continue;
+    })
+  }
+
 
   registerCallback(method: string, route: string, callback: (body: any, params: any, query: any, headers: any) => Promise<HttpResponse>): void {
     this.httpServer.route({
@@ -52,6 +114,7 @@ export class HapiHttpServer implements HttpServer {
       }
     })
   }
+
   async start(port: number): Promise<Server> {
     this.httpServer.settings.port = port
     await this.httpServer.start()
