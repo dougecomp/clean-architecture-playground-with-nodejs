@@ -10,11 +10,27 @@ import { ExpressHttpServer } from "./express-http-server";
 import { FastifyHttpServer } from "./fastify-http-server";
 import { HapiHttpServer } from "./hapi-http-server";
 
+interface MakeRequesToInput {
+  method?: HTTP_VERBS
+  url: string
+  body?: any
+  headers?: any
+}
+async function makeHttpRequestTo({method = HTTP_VERBS.GET, url = '/' , body, headers = {}}: MakeRequesToInput) {
+  return await fetch(url, {
+    method,
+    body,
+    headers
+  })
+}
+
 describe.sequential.each([
   [{serverName: 'Express Http Server', httpServer: ExpressHttpServer}],
   [{serverName: 'Fastify Http Server', httpServer: FastifyHttpServer}],
   [{serverName: 'Hapi Http Server', httpServer: HapiHttpServer}]
 ])('$serverName', ({ httpServer }) => {
+  const HTTP_SERVER_PORT = 9999
+  const HTTP_SERVER_BASE_URL = `http://localhost:${HTTP_SERVER_PORT}`
   let controller: MockProxy<HttpController>
   let server: Server
   let sut: HttpServer
@@ -36,8 +52,11 @@ describe.sequential.each([
   })
 
   test('return not found if is listening and route does not exist', async () => {
-    server = await sut.start(9999)
-    const response = await fetch(`http://localhost:9999/any_route`)
+    server = await sut.start(HTTP_SERVER_PORT)
+    
+    const response = await makeHttpRequestTo({
+      url: `${HTTP_SERVER_BASE_URL}/any_route`
+    })
 
     expect(response.status).toBe(404)
   })
@@ -49,10 +68,12 @@ describe.sequential.each([
         method: HTTP_VERBS.GET,
         route: '/any_route',
         controller
+      })  
+      server = await sut.start(HTTP_SERVER_PORT)
+
+      const response = await makeHttpRequestTo({
+        url: `${HTTP_SERVER_BASE_URL}/any_route`
       })
-  
-      server = await sut.start(9999)
-      const response = await fetch(`http://localhost:9999/any_route`)
   
       expect(response.status).toBe(200)
     })
@@ -62,10 +83,12 @@ describe.sequential.each([
         method: HTTP_VERBS.GET,
         route: '/any_route',
         controller
+      })  
+      server = await sut.start(HTTP_SERVER_PORT)
+
+      await makeHttpRequestTo({
+        url: `${HTTP_SERVER_BASE_URL}/any_route?name=any_name`
       })
-  
-      server = await sut.start(9999)
-      await fetch(`http://localhost:9999/any_route?name=any_name`)
   
       expect(controller.handle)
         .toBeCalledWith(
@@ -81,10 +104,12 @@ describe.sequential.each([
         method: HTTP_VERBS.GET,
         route: '/any_route/:{name}',
         controller
+      })  
+      server = await sut.start(HTTP_SERVER_PORT)
+
+      await makeHttpRequestTo({
+        url: `${HTTP_SERVER_BASE_URL}/any_route/any_name`
       })
-  
-      server = await sut.start(9999)
-      await fetch(`http://localhost:9999/any_route/any_name`)
   
       expect(controller.handle)
         .toBeCalledWith(
@@ -100,10 +125,11 @@ describe.sequential.each([
         method: HTTP_VERBS.POST,
         route: '/any_route',
         controller
-      })
-  
-      server = await sut.start(9999)
-      await fetch(`http://localhost:9999/any_route`, {
+      })  
+      server = await sut.start(HTTP_SERVER_PORT)
+
+      await makeHttpRequestTo({
+        url: `${HTTP_SERVER_BASE_URL}/any_route`,
         method: HTTP_VERBS.POST,
         body: JSON.stringify({ name: 'any_name' }),
         headers: {
@@ -128,11 +154,11 @@ describe.sequential.each([
         route: '/any_route',
         controller,
         preController
-      })
-  
-      server = await sut.start(9999)
-      await fetch(`http://localhost:9999/any_route`, {
-        method: HTTP_VERBS.GET,
+      })  
+      server = await sut.start(HTTP_SERVER_PORT)
+
+      await makeHttpRequestTo({
+        url: `${HTTP_SERVER_BASE_URL}/any_route`
       })
 
       expect(preController.handle).toHaveBeenCalledOnce()
@@ -147,11 +173,11 @@ describe.sequential.each([
         route: '/any_route',
         controller,
         preController
-      })
-  
-      server = await sut.start(9999)
-      await fetch(`http://localhost:9999/any_route`, {
-        method: HTTP_VERBS.GET,
+      })  
+      server = await sut.start(HTTP_SERVER_PORT)
+
+      await makeHttpRequestTo({
+        url: `${HTTP_SERVER_BASE_URL}/any_route`
       })
 
       expect(controller.handle).toHaveBeenCalledWith(
@@ -167,11 +193,11 @@ describe.sequential.each([
         route: '/any_route',
         controller,
         preController
-      })
-  
-      server = await sut.start(9999)
-      const response = await fetch(`http://localhost:9999/any_route`, {
-        method: HTTP_VERBS.GET,
+      })  
+      server = await sut.start(HTTP_SERVER_PORT)
+
+      const response = await makeHttpRequestTo({
+        url: `${HTTP_SERVER_BASE_URL}/any_route`
       })
 
       expect(response.status).toBe(400)
@@ -185,11 +211,11 @@ describe.sequential.each([
         route: '/any_route',
         controller,
         preController
-      })
-  
-      server = await sut.start(9999)
-      const response = await fetch(`http://localhost:9999/any_route`, {
-        method: HTTP_VERBS.GET,
+      })  
+      server = await sut.start(HTTP_SERVER_PORT)
+
+      await makeHttpRequestTo({
+        url: `${HTTP_SERVER_BASE_URL}/any_route`
       })
 
       expect(preController.handle).toHaveBeenCalledOnce()
@@ -211,9 +237,11 @@ describe.sequential.each([
         route: '/any_route',
         callback: callback
       })
+      server = await sut.start(HTTP_SERVER_PORT)
 
-      server = await sut.start(9999)
-      const response = await fetch(`http://localhost:9999/any_route`)
+      const response = await makeHttpRequestTo({
+        url: `${HTTP_SERVER_BASE_URL}/any_route`
+      })
   
       expect(response.status).toBe(200)
     })
@@ -224,9 +252,11 @@ describe.sequential.each([
         route: '/any_route',
         callback: callback
       })
+      server = await sut.start(HTTP_SERVER_PORT)
 
-      server = await sut.start(9999)
-      await fetch(`http://localhost:9999/any_route?name=any_name`)
+      await makeHttpRequestTo({
+        url: `${HTTP_SERVER_BASE_URL}/any_route?name=any_name`
+      })
   
       expect(callback)
         .toBeCalledWith(
@@ -243,9 +273,11 @@ describe.sequential.each([
         route: '/any_route/:{name}',
         callback: callback
       })
+      server = await sut.start(HTTP_SERVER_PORT)
 
-      server = await sut.start(9999)
-      await fetch(`http://localhost:9999/any_route/any_name`)
+      await makeHttpRequestTo({
+        url: `${HTTP_SERVER_BASE_URL}/any_route/any_name`
+      })
   
       expect(callback)
         .toBeCalledWith(
@@ -262,9 +294,10 @@ describe.sequential.each([
         route: '/any_route',
         callback: callback
       })
+      server = await sut.start(HTTP_SERVER_PORT)
 
-      server = await sut.start(9999)
-      await fetch(`http://localhost:9999/any_route`, {
+      await makeHttpRequestTo({
+        url: `${HTTP_SERVER_BASE_URL}/any_route`,
         method: HTTP_VERBS.POST,
         body: JSON.stringify({ name: 'any_name' }),
         headers: { 'Content-Type': 'application/json' }
@@ -287,11 +320,11 @@ describe.sequential.each([
         route: '/any_route',
         callback,
         preCallback
-      })
-  
-      server = await sut.start(9999)
-      await fetch(`http://localhost:9999/any_route`, {
-        method: HTTP_VERBS.GET,
+      })  
+      server = await sut.start(HTTP_SERVER_PORT)
+
+      await makeHttpRequestTo({
+        url: `${HTTP_SERVER_BASE_URL}/any_route`
       })
 
       expect(callback)
@@ -311,11 +344,11 @@ describe.sequential.each([
         route: '/any_route',
         callback,
         preCallback
-      })
-  
-      server = await sut.start(9999)
-      const response = await fetch(`http://localhost:9999/any_route`, {
-        method: HTTP_VERBS.GET,
+      })  
+      server = await sut.start(HTTP_SERVER_PORT)
+
+      const response = await makeHttpRequestTo({
+        url: `${HTTP_SERVER_BASE_URL}/any_route`
       })
 
       expect(response.status).toBe(400)
@@ -329,11 +362,11 @@ describe.sequential.each([
         route: '/any_route',
         callback,
         preCallback
-      })
-  
-      server = await sut.start(9999)
-      await fetch(`http://localhost:9999/any_route`, {
-        method: HTTP_VERBS.GET,
+      })  
+      server = await sut.start(HTTP_SERVER_PORT)
+
+      await makeHttpRequestTo({
+        url: `${HTTP_SERVER_BASE_URL}/any_route`
       })
 
       expect(preCallback).toHaveBeenCalledOnce()
