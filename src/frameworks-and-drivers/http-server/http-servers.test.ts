@@ -1,25 +1,38 @@
 import { Server } from 'node:http'
 
-import { MockProxy, mock } from 'vitest-mock-extended'
+import { MockProxy, mock } from "vitest-mock-extended";
+import { Mock } from 'vitest';
 
-import { Mock } from 'vitest'
-import { HTTP_VERBS } from "../../interface-adapters/controllers/http/helpers"
-import { HttpController } from "../../interface-adapters/controllers/http/http-controller"
-import { HapiHttpServer } from './hapi-http-server'
+import { HttpController } from "../../interface-adapters/controllers/http/http-controller";
+import { HTTP_VERBS } from '../../interface-adapters/controllers/http/helpers';
+import { HttpServer } from "./http-server";
+import { ExpressHttpServer } from "./express-http-server";
+import { FastifyHttpServer } from "./fastify-http-server";
+import { HapiHttpServer } from "./hapi-http-server";
 
-describe('Http Server with Hapi', () => {
+describe.sequential.each([
+  [{serverName: 'Express Http Server', httpServer: ExpressHttpServer}],
+  [{serverName: 'Fastify Http Server', httpServer: FastifyHttpServer}],
+  [{serverName: 'Hapi Http Server', httpServer: HapiHttpServer}]
+])('$serverName', ({ httpServer }) => {
   let controller: MockProxy<HttpController>
   let server: Server
-  let sut: HapiHttpServer
-
+  let sut: HttpServer
+  
   beforeEach(() => {
     controller = mock<HttpController>()
     controller.handle.mockResolvedValue({ statusCode: 200, body: '' })
-    sut = new HapiHttpServer()
+    sut = new httpServer()
   })
 
-  afterEach(() => {
+  afterEach(async () => {
     server.close()
+    
+    await new Promise(resolve => {
+      server.on('close', () => {
+        resolve(null)
+      })
+    })
   })
 
   test('return not found if is listening and route does not exist', async () => {
@@ -29,13 +42,13 @@ describe('Http Server with Hapi', () => {
     expect(response.status).toBe(404)
   })
 
-  describe('route registration through an controller', () => {
+  suite('route registration through an controller', () => {
     
     test('return controller response if is listening and route exists', async () => {
       sut.registerController({
         method: HTTP_VERBS.GET,
         route: '/any_route',
-        controller: controller
+        controller
       })
   
       server = await sut.start(9999)
@@ -48,7 +61,7 @@ describe('Http Server with Hapi', () => {
       sut.registerController({
         method: HTTP_VERBS.GET,
         route: '/any_route',
-        controller: controller
+        controller
       })
   
       server = await sut.start(9999)
@@ -64,11 +77,11 @@ describe('Http Server with Hapi', () => {
     })
   
     test('can forward named params to controller', async () => {
-    sut.registerController({
-      method: HTTP_VERBS.GET,
-      route: '/any_route/{name}',
-      controller: controller
-    })
+      sut.registerController({
+        method: HTTP_VERBS.GET,
+        route: '/any_route/:{name}',
+        controller
+      })
   
       server = await sut.start(9999)
       await fetch(`http://localhost:9999/any_route/any_name`)
@@ -86,7 +99,7 @@ describe('Http Server with Hapi', () => {
       sut.registerController({
         method: HTTP_VERBS.POST,
         route: '/any_route',
-        controller: controller
+        controller
       })
   
       server = await sut.start(9999)
@@ -163,9 +176,28 @@ describe('Http Server with Hapi', () => {
 
       expect(response.status).toBe(400)
     })
+
+    test('controller not execute if statusCode of preController is not 200', async () => {
+      const preController = mock<HttpController>()
+      preController.handle.mockResolvedValue({ statusCode: 400, body: '' })
+      sut.registerController({
+        method: HTTP_VERBS.GET,
+        route: '/any_route',
+        controller,
+        preController
+      })
+  
+      server = await sut.start(9999)
+      const response = await fetch(`http://localhost:9999/any_route`, {
+        method: HTTP_VERBS.GET,
+      })
+
+      expect(preController.handle).toHaveBeenCalledOnce()
+      expect(controller.handle).not.toHaveBeenCalled()
+    })
   })
 
-  describe('route registration through a callback', () => {
+  suite('route registration through a callback', () => {
     let callback: Mock
 
     beforeEach(() => {
@@ -177,7 +209,7 @@ describe('Http Server with Hapi', () => {
       sut.registerCallback({
         method: HTTP_VERBS.GET,
         route: '/any_route',
-        callback
+        callback: callback
       })
 
       server = await sut.start(9999)
@@ -190,7 +222,7 @@ describe('Http Server with Hapi', () => {
       sut.registerCallback({
         method: HTTP_VERBS.GET,
         route: '/any_route',
-        callback
+        callback: callback
       })
 
       server = await sut.start(9999)
@@ -209,7 +241,7 @@ describe('Http Server with Hapi', () => {
       sut.registerCallback({
         method: HTTP_VERBS.GET,
         route: '/any_route/:{name}',
-        callback
+        callback: callback
       })
 
       server = await sut.start(9999)
@@ -228,7 +260,7 @@ describe('Http Server with Hapi', () => {
       sut.registerCallback({
         method: HTTP_VERBS.POST,
         route: '/any_route',
-        callback
+        callback: callback
       })
 
       server = await sut.start(9999)
@@ -300,7 +332,7 @@ describe('Http Server with Hapi', () => {
       })
   
       server = await sut.start(9999)
-      const response = await fetch(`http://localhost:9999/any_route`, {
+      await fetch(`http://localhost:9999/any_route`, {
         method: HTTP_VERBS.GET,
       })
 
