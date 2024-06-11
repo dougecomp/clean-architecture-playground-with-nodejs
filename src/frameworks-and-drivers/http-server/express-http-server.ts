@@ -3,8 +3,7 @@ import { Server } from 'node:http';
 import express, { Express, Request, Response } from 'express';
 
 import { HTTP_VERBS } from '../../interface-adapters/controllers/http/helpers';
-import { HttpController } from "../../interface-adapters/controllers/http/http-controller";
-import { HttpCallback, HttpServer, RegisterControllerInput } from "./http-server";
+import { HttpCallback, HttpServer, RegisterCallbackV2, RegisterControllerInput } from "./http-server";
 
 export class ExpressHttpServer implements HttpServer {
   private httpServer: Express
@@ -49,6 +48,33 @@ export class ExpressHttpServer implements HttpServer {
 
   registerCallback(method: HTTP_VERBS, route: string, callback: HttpCallback): void {
     this.httpServer[method](route.replace(/\{|\}/g, ""), async (req: Request, res: Response) => {
+      const response = await callback(req.body, req.params, req.query, req.headers)
+      res
+      .status(response.statusCode)
+      .send(response.body)
+    })
+  }
+
+  registerCallbackV2({method, route, callback, preCallback}: RegisterCallbackV2): void {
+    this.httpServer[method](route.replace(/\{|\}/g, ""), async (req, res, next) => {
+      if (preCallback) {
+        const httpResponse = await preCallback(
+          req.body,
+          req.params,
+          req.query,
+          req.headers
+        )
+        if (httpResponse.statusCode !== 200) {
+          return res
+          .status(httpResponse.statusCode)
+          .send(httpResponse.body)
+        }
+        Object.assign(req.body, httpResponse.body)
+        next()
+      }
+      next()
+    },
+    async (req, res) => {
       const response = await callback(req.body, req.params, req.query, req.headers)
       res
       .status(response.statusCode)
