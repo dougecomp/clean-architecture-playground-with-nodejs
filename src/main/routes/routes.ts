@@ -4,6 +4,10 @@ import { HTTP_VERBS } from "../../interface-adapters/controllers/http/helpers";
 import { XPTOController } from "../../interface-adapters/controllers/http/xpto-controller";
 
 export function setupRoutes (httpServer: HttpServer) {
-  httpServer.registerController(HTTP_VERBS.GET, '/hello/{:name}', new HelloWorldController())
+  httpServer.registerController({
+    method: HTTP_VERBS.GET,
+    route: '/hello-world',
+    controller: new HelloWorldController()
+  })
   new XPTOController(httpServer)
 }

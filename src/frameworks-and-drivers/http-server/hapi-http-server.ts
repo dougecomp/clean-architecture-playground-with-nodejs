@@ -18,33 +18,12 @@ export class HapiHttpServer implements HttpServer {
     })
   }
 
-  registerController(method: HTTP_VERBS, route: string, controller: HttpController<any, any>): void {
-    this.httpServer.route({
-      method: method,
-      path: route.replace(/\:/g, ""),
-      handler: async (request, response) => {
-        const httpResponse = await controller.handle({
-          ...request.payload as any,
-          ...request.params,
-          ...request.query,
-          ...request.headers
-        })
-        return response
-          .response(httpResponse.body)
-          .code(httpResponse.statusCode)
-      }
-    })
-  }
-
-  registerControllerV2({ method, route, controller, preController }: RegisterControllerV2): void {
+  registerController({ method, route, controller, preController }: RegisterControllerV2): void {
     const assign = `preController_${method}_${route}`
     this.httpServer.route({
       method: method,
-      path: route.replace(/\{|\}/g, ""),
+      path: route.replace(/\:/g, ""),
       options: {
-        plugins: {
-
-        },
         pre: [
           {
             method: async (req, res) => {

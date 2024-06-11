@@ -15,22 +15,8 @@ export class ExpressHttpServer implements HttpServer {
     this.httpServer = express()
     this.httpServer.use(express.json())
   }
-
-  registerController(method: HTTP_VERBS, route: string, controller: HttpController): void {
-    this.httpServer[method](route.replace(/\{|\}/g, ""), async (req: Request, res: Response) => {
-      const httpResponse = await controller.handle({
-        ...req.body as any,
-        ...req.params as any,
-        ...req.query as any,
-        ...req.headers as any
-      })
-      res
-      .status(httpResponse.statusCode)
-      .send(httpResponse.body)
-    })
-  }
-
-  registerControllerV2({ method, route, controller, preController }: RegisterControllerV2): void {
+  
+  registerController({ method, route, controller, preController }: RegisterControllerV2): void {
     this.httpServer[method](route.replace(/\{|\}/g, ""), async (req: Request, res: Response, next) => {
       if (preController) {
         const httpResponse = await preController.handle({
