@@ -4,7 +4,7 @@ import Boom from '@hapi/boom';
 import { Server as HapiServer, server } from '@hapi/hapi';
 
 import { HttpResponse } from '../../interface-adapters/controllers/http/helpers';
-import { HttpServer, RegisterCallbackV2, RegisterControllerInput } from "./http-server";
+import { HttpServer, RegisterCallback, RegisterControllerInput } from "./http-server";
 
 export class HapiHttpServer implements HttpServer {
   private httpServer: HapiServer
@@ -80,7 +80,7 @@ export class HapiHttpServer implements HttpServer {
     })
   }
 
-  registerCallback({ method, route, callback, preCallback }: RegisterCallbackV2): void {
+  registerCallback({ method, route, callback, preCallback }: RegisterCallback): void {
     const assign = `preCallback_${method}_${route}`
     this.httpServer.route({
       method: method as any,

@@ -3,7 +3,7 @@ import { Server } from 'node:http';
 import express, { Express, Request, Response } from 'express';
 
 import { HTTP_VERBS } from '../../interface-adapters/controllers/http/helpers';
-import { HttpCallback, HttpServer, RegisterCallbackV2, RegisterControllerInput } from "./http-server";
+import { HttpCallback, HttpServer, RegisterCallback, RegisterControllerInput } from "./http-server";
 
 export class ExpressHttpServer implements HttpServer {
   private httpServer: Express
@@ -46,7 +46,7 @@ export class ExpressHttpServer implements HttpServer {
     })
   }
 
-  registerCallback({method, route, callback, preCallback}: RegisterCallbackV2): void {
+  registerCallback({method, route, callback, preCallback}: RegisterCallback): void {
     this.httpServer[method](route.replace(/\{|\}/g, ""), async (req, res, next) => {
       if (preCallback) {
         const httpResponse = await preCallback(

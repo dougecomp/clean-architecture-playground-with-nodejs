@@ -14,7 +14,7 @@ export interface RegisterControllerInput {
   preController?: HttpController
 }
 
-export interface RegisterCallbackV2 {
+export interface RegisterCallback {
   method: HTTP_VERBS,
   route: string,  
   callback: HttpCallback
@@ -23,6 +23,6 @@ export interface RegisterCallbackV2 {
 
 export interface HttpServer {
   registerController(input: RegisterControllerInput): void
-  registerCallback(input: RegisterCallbackV2): void
+  registerCallback(input: RegisterCallback): void
   start(port: number): Promise<Server>
 }
