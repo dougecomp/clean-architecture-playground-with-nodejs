@@ -85,4 +85,48 @@ suite('Command line interfaces', () => {
       any_option: true
     })
   })
+
+  test('run controller with long value options', async () => {
+    const controller = mock<Controller>()
+    controller.handle.mockResolvedValue({ data: { any: 'data'} })
+
+    sut.registerController({
+      name: 'a_command_name',
+      controller,
+      options: [
+        {
+          long: '--any_option <option>',
+          short: '-a'
+        }
+      ]
+    })
+
+    sut.start('a_command_name --any_option any_value')
+
+    expect(controller.handle).toBeCalledWith({
+      any_option: 'any_value'
+    })
+  })
+
+  test('run controller with short value options', async () => {
+    const controller = mock<Controller>()
+    controller.handle.mockResolvedValue({ data: { any: 'data'} })
+
+    sut.registerController({
+      name: 'a_command_name',
+      controller,
+      options: [
+        {
+          long: '--any_option <option>',
+          short: '-a'
+        }
+      ]
+    })
+
+    sut.start('a_command_name -a any_value')
+
+    expect(controller.handle).toBeCalledWith({
+      any_option: 'any_value'
+    })
+  })
 })
