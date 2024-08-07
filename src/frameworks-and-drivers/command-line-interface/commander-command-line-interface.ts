@@ -23,18 +23,26 @@ export class CommanderCommandLineInterface implements CommandLineInterface {
 
   registerController(input: RegisterControllerToCommandLineInterfaceInput): void {
     const command = this.program
-    .command(input.name)
-    .action(async () => {
+      .command(input.name)    
+    if (input.args) {
+      command.arguments(input.args)
+    }
+    if (input.options) {
+      input.options.forEach(option => {
+        command.option(`${option.short}, ${option.long}`)
+      })
+    }
+    command.action(async () => {
       const controller = input.controller
-      const controllerInput = this.adaptArgsToControllerInput(command.args || [])
+      const controllerInput = {
+        ...this.adaptArgsToControllerInput(command.args || []),
+        ...command.opts()
+      }
       const response = await controller.handle(controllerInput)
       if (response.error) {
         this.program.error(response.error?.message)
       }
     })
-    if (input.args) {
-      command.arguments(input.args)
-    }
   }
   
   start(command: string): void {

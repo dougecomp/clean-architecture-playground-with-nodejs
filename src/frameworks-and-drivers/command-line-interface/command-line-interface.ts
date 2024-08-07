@@ -1,10 +1,15 @@
 import { Controller } from "../../interface-adapters/controllers/controller"
 
+type CommandOptions = {
+  long: string
+  short: string
+}
+
 export interface RegisterControllerToCommandLineInterfaceInput {
   name: string,
   controller: Controller
   args?: string
-  options?: string
+  options?: CommandOptions[]
 }
 
 export interface CommandLineInterface {
