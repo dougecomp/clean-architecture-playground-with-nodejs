@@ -8,6 +8,8 @@ import { ExpressHttpServer } from "./express-http-server";
 import { FastifyHttpServer } from "./fastify-http-server";
 import { HapiHttpServer } from "./hapi-http-server";
 import { HttpServer } from "./http-server";
+import { UnauthorizedError } from '../../interface-adapters/errors/unathorized-error';
+import { ServerError } from '../../interface-adapters/errors/server-error';
 
 interface MakeRequesToInput {
   method?: HTTP_VERBS
@@ -37,7 +39,7 @@ suite.sequential.each([
   
   beforeEach(() => {
     controller = mock<Controller>()
-    controller.handle.mockResolvedValue({ data: {} })
+    controller.handle.mockResolvedValue({ data: { any: 'data'} })
     sut = new httpServer()
   })
 
@@ -63,7 +65,7 @@ suite.sequential.each([
 
   suite('route registration through an controller', () => {
     
-    test('return controller response if is listening and route exists', async () => {
+    test('return OK with data if is listening, route exists and controller no return error', async () => {
       sut.registerController({
         method: HTTP_VERBS.GET,
         route: '/any_route',
@@ -76,6 +78,58 @@ suite.sequential.each([
       })
   
       expect(response.status).toBe(200)
+      expect(await response.json()).deep.equals({ any: 'data' })
+    })
+
+    test('return UNAUTHORIZED if is listening, route exists and controller return UnauthorizedError', async () => {
+      controller.handle.mockResolvedValue({ error: new UnauthorizedError() })
+
+      sut.registerController({
+        method: HTTP_VERBS.GET,
+        route: '/any_route',
+        controller
+      })  
+      server = await sut.start(HTTP_SERVER_PORT)
+
+      const response = await makeHttpRequestTo({
+        url: `${HTTP_SERVER_BASE_URL}/any_route`
+      })
+  
+      expect(response.status).toBe(401)
+    })
+
+    test('return BAD_REQUEST if is listening, route exists and controller return Error', async () => {
+      controller.handle.mockResolvedValue({ error: new Error() })
+
+      sut.registerController({
+        method: HTTP_VERBS.GET,
+        route: '/any_route',
+        controller
+      })  
+      server = await sut.start(HTTP_SERVER_PORT)
+
+      const response = await makeHttpRequestTo({
+        url: `${HTTP_SERVER_BASE_URL}/any_route`
+      })
+  
+      expect(response.status).toBe(400)
+    })
+
+    test('return SERVER_ERROR if is listening, route exists and controller return Server Error', async () => {
+      controller.handle.mockResolvedValue({ error: new ServerError() })
+
+      sut.registerController({
+        method: HTTP_VERBS.GET,
+        route: '/any_route',
+        controller
+      })  
+      server = await sut.start(HTTP_SERVER_PORT)
+
+      const response = await makeHttpRequestTo({
+        url: `${HTTP_SERVER_BASE_URL}/any_route`
+      })
+  
+      expect(response.status).toBe(500)
     })
   
     test('can forward query params to controller', async () => {
