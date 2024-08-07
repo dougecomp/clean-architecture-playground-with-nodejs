@@ -42,7 +42,7 @@ suite('Command line interfaces', () => {
     })
   })
 
-  test('run controller with boolean options', async () => {
+  test('run controller with long boolean option', async () => {
     const controller = mock<Controller>()
     controller.handle.mockResolvedValue({ data: { any: 'data'} })
 
@@ -58,6 +58,28 @@ suite('Command line interfaces', () => {
     })
 
     sut.start('a_command_name --any_option')
+
+    expect(controller.handle).toBeCalledWith({
+      any_option: true
+    })
+  })
+
+  test('run controller with short boolean option', async () => {
+    const controller = mock<Controller>()
+    controller.handle.mockResolvedValue({ data: { any: 'data'} })
+
+    sut.registerController({
+      name: 'a_command_name',
+      controller,
+      options: [
+        {
+          long: '--any_option',
+          short: '-a'
+        }
+      ]
+    })
+
+    sut.start('a_command_name -a')
 
     expect(controller.handle).toBeCalledWith({
       any_option: true
