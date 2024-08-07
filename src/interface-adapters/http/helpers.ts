@@ -6,6 +6,13 @@ export enum HTTP_VERBS {
   DELETE = 'delete'
 }
 
+export enum HTTP_STATUS_CODE {
+  OK = 200,
+  UNAUTHORIZED = 401,
+  BAD_REQUEST = 403,
+  SERVER_ERROR = 500
+}
+
 export interface HttpResponse<T = any> {
   body?: T
   statusCode: number

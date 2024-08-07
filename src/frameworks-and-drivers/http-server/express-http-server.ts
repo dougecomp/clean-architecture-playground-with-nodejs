@@ -2,7 +2,10 @@ import { Server } from 'node:http';
 
 import express, { Express, Request, Response } from 'express';
 
-import { HttpServer, RegisterCallbackInput, RegisterControllerInput } from "./http-server";
+import { HttpServer, RegisterControllerInput } from "./http-server";
+import { UnauthorizedError } from '../../interface-adapters/errors/unathorized-error';
+import { ServerError } from '../../interface-adapters/errors/server-error';
+import { HTTP_STATUS_CODE } from '../../interface-adapters/http/helpers';
 
 export class ExpressHttpServer implements HttpServer {
   private httpServer: Express
@@ -16,25 +19,30 @@ export class ExpressHttpServer implements HttpServer {
   
   registerController({ method, route, controller }: RegisterControllerInput): void {
     this.httpServer[method](route.replace(/\{|\}/g, ""), async (req: Request, res: Response) => {
-      const httpResponse = await controller.handle({
+      const controllerResponse = await controller.handle({
         ...req.body as any,
         ...req.params as any,
         ...req.query as any,
         ...req.headers as any
       })
+      if (controllerResponse.error instanceof ServerError) {
+        res
+        .status(HTTP_STATUS_CODE.SERVER_ERROR)
+        .send(controllerResponse.error)
+      }
+      if (controllerResponse.error instanceof UnauthorizedError) {
+        res
+        .status(HTTP_STATUS_CODE.UNAUTHORIZED)
+        .send(controllerResponse.error)        
+      }
+      if (controllerResponse.error instanceof Error) {
+        res
+        .status(HTTP_STATUS_CODE.BAD_REQUEST)
+        .send(controllerResponse.error)
+      }
       res
-      .status(httpResponse.statusCode)
-      .send(httpResponse.body)
-    })
-  }
-
-  registerCallback({method, route, callback}: RegisterCallbackInput): void {
-    this.httpServer[method](route.replace(/\{|\}/g, ""),
-    async (req, res) => {
-      const response = await callback(req.body, req.params, req.query, req.headers)
-      res
-      .status(response.statusCode)
-      .send(response.body)
+      .status(HTTP_STATUS_CODE.OK)
+      .send(controllerResponse.data)
     })
   }
 

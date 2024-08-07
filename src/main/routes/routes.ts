@@ -1,7 +1,6 @@
 import { HttpServer } from "../../frameworks-and-drivers/http-server/http-server";
-import { HelloWorldController } from "../../interface-adapters/controllers/http/hello-world-controller";
-import { HTTP_VERBS } from "../../interface-adapters/controllers/http/helpers";
-import { XPTOController } from "../../interface-adapters/controllers/http/xpto-controller";
+import { HelloWorldController } from "../../interface-adapters/controllers/hello-world-controller";
+import { HTTP_VERBS } from "../../interface-adapters/http/helpers";
 
 export function setupRoutes (httpServer: HttpServer) {
   httpServer.registerController({
@@ -9,5 +8,4 @@ export function setupRoutes (httpServer: HttpServer) {
     route: '/hello-world',
     controller: new HelloWorldController()
   })
-  new XPTOController(httpServer)
 }

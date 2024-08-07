@@ -3,7 +3,10 @@ import { Server } from 'node:http';
 import Boom from '@hapi/boom';
 import { Server as HapiServer, server } from '@hapi/hapi';
 
-import { HttpServer, RegisterCallbackInput, RegisterControllerInput } from "./http-server";
+import { HttpServer, RegisterControllerInput } from "./http-server";
+import { ServerError } from '../../interface-adapters/errors/server-error';
+import { UnauthorizedError } from '../../interface-adapters/errors/unathorized-error';
+import { HTTP_STATUS_CODE } from '../../interface-adapters/http/helpers';
 
 export class HapiHttpServer implements HttpServer {
   private httpServer: HapiServer
@@ -28,17 +31,32 @@ export class HapiHttpServer implements HttpServer {
       method: method,
       path: route.replace(/:/g, ""),
       handler: async (request, response) => {
-        const httpResponse = await controller.handle({
+        const controllerResponse = await controller.handle({
           ...request.payload as object || {},
           ...request.params || {},
           ...request.query || {},
           ...request.headers || {},
           ...request.pre[assign]
         })
-        
+
+        if (controllerResponse.error instanceof ServerError) {
+          return response
+          .response(controllerResponse.error)
+          .code(HTTP_STATUS_CODE.SERVER_ERROR)
+        }
+        if (controllerResponse.error instanceof UnauthorizedError) {
+          return response
+          .response(controllerResponse.error)
+          .code(HTTP_STATUS_CODE.UNAUTHORIZED)
+        }
+        if (controllerResponse.error instanceof Error) {
+          return response
+          .response(controllerResponse.error)
+          .code(HTTP_STATUS_CODE.BAD_REQUEST)
+        }
         return response
-          .response(httpResponse.body)
-          .code(httpResponse.statusCode)
+          .response(controllerResponse.data)
+          .code(HTTP_STATUS_CODE.OK)
       }
     })
     this.httpServer.ext('onPreResponse', (request, response) => {
@@ -46,30 +64,6 @@ export class HapiHttpServer implements HttpServer {
         return response.response(request.response.output.payload).code(request.response.output.statusCode);
       }
       return response.continue;
-    })
-  }
-
-  registerCallback({ method, route, callback }: RegisterCallbackInput): void {
-    const assign = `preCallback_${method}_${route}`
-    this.httpServer.route({
-      method: method as any,
-      path: route.replace(/:/g, ""),
-      handler: async (request, response) => {
-        const body = {
-          ...request.payload as any || {},
-          ...request.pre[assign]
-        }
-        const httpResponse = await callback(
-          body,
-          request.params  || {},
-          request.query  || {},
-          request.headers,
-          
-        )
-        return response
-          .response(httpResponse.body)
-          .code(httpResponse.statusCode)
-      }
     })
   }
 
