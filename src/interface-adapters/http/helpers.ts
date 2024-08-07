@@ -9,7 +9,7 @@ export enum HTTP_VERBS {
 export enum HTTP_STATUS_CODE {
   OK = 200,
   UNAUTHORIZED = 401,
-  BAD_REQUEST = 403,
+  BAD_REQUEST = 400,
   SERVER_ERROR = 500
 }
 
