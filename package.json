@@ -25,6 +25,7 @@
     "@fastify/cors": "^9.0.1",
     "@hapi/boom": "^10.0.1",
     "@hapi/hapi": "^21.3.9",
+    "commander": "^12.1.0",
     "express": "^4.19.2",
     "fastify": "^4.27.0"
   }
