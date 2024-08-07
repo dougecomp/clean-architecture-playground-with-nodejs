@@ -26,21 +26,21 @@ export class ExpressHttpServer implements HttpServer {
         ...req.headers as any
       })
       if (controllerResponse.error instanceof ServerError) {
-        res
+        return res
         .status(HTTP_STATUS_CODE.SERVER_ERROR)
         .send(controllerResponse.error)
       }
       if (controllerResponse.error instanceof UnauthorizedError) {
-        res
+        return res
         .status(HTTP_STATUS_CODE.UNAUTHORIZED)
         .send(controllerResponse.error)        
       }
       if (controllerResponse.error instanceof Error) {
-        res
+        return res
         .status(HTTP_STATUS_CODE.BAD_REQUEST)
         .send(controllerResponse.error)
       }
-      res
+      return res
       .status(HTTP_STATUS_CODE.OK)
       .send(controllerResponse.data)
     })
