@@ -3,7 +3,6 @@ import { Server } from 'node:http';
 import Boom from '@hapi/boom';
 import { Server as HapiServer, server } from '@hapi/hapi';
 
-import { HttpResponse } from '../../interface-adapters/controllers/http/helpers';
 import { HttpServer, RegisterCallbackInput, RegisterControllerInput } from "./http-server";
 
 export class HapiHttpServer implements HttpServer {
@@ -23,41 +22,11 @@ export class HapiHttpServer implements HttpServer {
     })
   }
 
-  registerController({ method, route, controller, preController }: RegisterControllerInput): void {
+  registerController({ method, route, controller }: RegisterControllerInput): void {
     const assign = `preController_${method}_${route}`
     this.httpServer.route({
       method: method,
-      path: route.replace(/\:/g, ""),
-      options: {
-        pre: [
-          {
-            method: async (req, res) => {
-              if (!preController) return res.continue              
-              const httpResponse = await preController.handle({
-                ...req.payload as any || {},
-                ...req.query || {},
-                ...req.params || {},
-                ...req.headers || {}
-              })
-              let error: Boom.Boom | null = null
-              if (httpResponse.statusCode >= 500) {
-                error = Boom.badImplementation<Boom.Boom>(httpResponse.body)
-                error.output.statusCode = httpResponse.statusCode
-              }
-              if (httpResponse.statusCode >= 400) {
-                error = Boom.badRequest<Boom.Boom>(httpResponse.body)
-                error.output.statusCode = httpResponse.statusCode
-              }
-              if (error) {
-                throw error
-              }
-              return httpResponse.body
-            
-            },
-            assign
-          }
-        ]
-      },
+      path: route.replace(/:/g, ""),
       handler: async (request, response) => {
         const httpResponse = await controller.handle({
           ...request.payload as object || {},
@@ -80,40 +49,11 @@ export class HapiHttpServer implements HttpServer {
     })
   }
 
-  registerCallback({ method, route, callback, preCallback }: RegisterCallbackInput): void {
+  registerCallback({ method, route, callback }: RegisterCallbackInput): void {
     const assign = `preCallback_${method}_${route}`
     this.httpServer.route({
       method: method as any,
-      path: route.replace(/\:/g, ""),
-      options: {
-        pre: [
-          {
-            method: async (req, res) => {
-              if (!preCallback) return res.continue
-              const httpResponse = await preCallback(
-                req.payload || {},
-                req.params  || {},
-                req.query  || {},
-                req.headers
-              )
-              let error: Boom.Boom | null = null
-              if (httpResponse.statusCode >= 500) {
-                error = Boom.badImplementation<Boom.Boom>(httpResponse.body)
-                error.output.statusCode = httpResponse.statusCode
-              }
-              if (httpResponse.statusCode >= 400) {
-                error = Boom.badRequest<Boom.Boom>(httpResponse.body)
-                error.output.statusCode = httpResponse.statusCode
-              }
-              if (error) {
-                throw error
-              }
-              return httpResponse.body
-            },
-            assign
-          }
-        ],
-      },
+      path: route.replace(/:/g, ""),
       handler: async (request, response) => {
         const body = {
           ...request.payload as any || {},

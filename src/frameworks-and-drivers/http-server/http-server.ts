@@ -10,15 +10,13 @@ export interface HttpCallback {
 export interface RegisterControllerInput {
   method: HTTP_VERBS,
   route: string,
-  controller: HttpController,
-  preController?: HttpController
+  controller: HttpController
 }
 
 export interface RegisterCallbackInput {
   method: HTTP_VERBS,
   route: string,  
   callback: HttpCallback
-  preCallback?: HttpCallback
 }
 
 export interface HttpServer {

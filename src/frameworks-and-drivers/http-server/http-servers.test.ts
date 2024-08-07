@@ -16,6 +16,7 @@ interface MakeRequesToInput {
   body?: any
   headers?: any
 }
+
 async function makeHttpRequestTo({method = HTTP_VERBS.GET, url = '/' , body, headers = {}}: MakeRequesToInput) {
   return await fetch(url, {
     method,
@@ -24,7 +25,7 @@ async function makeHttpRequestTo({method = HTTP_VERBS.GET, url = '/' , body, hea
   })
 }
 
-describe.sequential.each([
+suite.sequential.each([
   [{serverName: 'Express Http Server', httpServer: ExpressHttpServer}],
   [{serverName: 'Fastify Http Server', httpServer: FastifyHttpServer}],
   [{serverName: 'Hapi Http Server', httpServer: HapiHttpServer}]
@@ -145,82 +146,6 @@ describe.sequential.each([
           )
         )
     })
-
-    test('can run a preController before the controller', async () => {
-      const preController = mock<HttpController>()
-      preController.handle.mockResolvedValue({ statusCode: 200, body: '' })
-      sut.registerController({
-        method: HTTP_VERBS.GET,
-        route: '/any_route',
-        controller,
-        preController
-      })  
-      server = await sut.start(HTTP_SERVER_PORT)
-
-      await makeHttpRequestTo({
-        url: `${HTTP_SERVER_BASE_URL}/any_route`
-      })
-
-      expect(preController.handle).toHaveBeenCalledOnce()
-      expect(controller.handle).toHaveBeenCalledOnce()
-    })
-
-    test('controller can get body from preController', async () => {
-      const preController = mock<HttpController>()
-      preController.handle.mockResolvedValue({ statusCode: 200, body: { name: 'any_name'} })
-      sut.registerController({
-        method: HTTP_VERBS.GET,
-        route: '/any_route',
-        controller,
-        preController
-      })  
-      server = await sut.start(HTTP_SERVER_PORT)
-
-      await makeHttpRequestTo({
-        url: `${HTTP_SERVER_BASE_URL}/any_route`
-      })
-
-      expect(controller.handle).toHaveBeenCalledWith(
-        expect.objectContaining({ name: 'any_name' })
-      )
-    })
-
-    test('return http response from preController if statusCode is not 200', async () => {
-      const preController = mock<HttpController>()
-      preController.handle.mockResolvedValue({ statusCode: 400, body: '' })
-      sut.registerController({
-        method: HTTP_VERBS.GET,
-        route: '/any_route',
-        controller,
-        preController
-      })  
-      server = await sut.start(HTTP_SERVER_PORT)
-
-      const response = await makeHttpRequestTo({
-        url: `${HTTP_SERVER_BASE_URL}/any_route`
-      })
-
-      expect(response.status).toBe(400)
-    })
-
-    test('controller not execute if statusCode of preController is not 200', async () => {
-      const preController = mock<HttpController>()
-      preController.handle.mockResolvedValue({ statusCode: 400, body: '' })
-      sut.registerController({
-        method: HTTP_VERBS.GET,
-        route: '/any_route',
-        controller,
-        preController
-      })  
-      server = await sut.start(HTTP_SERVER_PORT)
-
-      await makeHttpRequestTo({
-        url: `${HTTP_SERVER_BASE_URL}/any_route`
-      })
-
-      expect(preController.handle).toHaveBeenCalledOnce()
-      expect(controller.handle).not.toHaveBeenCalled()
-    })
   })
 
   suite('route registration through a callback', () => {
@@ -310,67 +235,6 @@ describe.sequential.each([
           {},
           expect.anything()
         )
-    })
-
-    test('callback can get body from preCallback', async () => {
-      const preCallback: Mock = vi.fn()
-      preCallback.mockResolvedValue({ statusCode: 200, body: {name: 'any_name'} })
-      sut.registerCallback({
-        method: HTTP_VERBS.GET,
-        route: '/any_route',
-        callback,
-        preCallback
-      })  
-      server = await sut.start(HTTP_SERVER_PORT)
-
-      await makeHttpRequestTo({
-        url: `${HTTP_SERVER_BASE_URL}/any_route`
-      })
-
-      expect(callback)
-        .toBeCalledWith(
-          { name: 'any_name' },
-          {},
-          {},
-          expect.anything()
-        )
-    })
-
-    test('return http response from preCallback if statusCode is not 200', async () => {
-      const preCallback: Mock = vi.fn()
-      preCallback.mockResolvedValue({ statusCode: 400, body: '' })
-      sut.registerCallback({
-        method: HTTP_VERBS.GET,
-        route: '/any_route',
-        callback,
-        preCallback
-      })  
-      server = await sut.start(HTTP_SERVER_PORT)
-
-      const response = await makeHttpRequestTo({
-        url: `${HTTP_SERVER_BASE_URL}/any_route`
-      })
-
-      expect(response.status).toBe(400)
-    })
-
-    test('callback not execute if statusCode of preCallback is not 200', async () => {
-      const preCallback: Mock = vi.fn()
-      preCallback.mockResolvedValue({ statusCode: 400, body: '' })
-      sut.registerCallback({
-        method: HTTP_VERBS.GET,
-        route: '/any_route',
-        callback,
-        preCallback
-      })  
-      server = await sut.start(HTTP_SERVER_PORT)
-
-      await makeHttpRequestTo({
-        url: `${HTTP_SERVER_BASE_URL}/any_route`
-      })
-
-      expect(preCallback).toHaveBeenCalledOnce()
-      expect(callback).not.toHaveBeenCalled()
     })
   })
 })

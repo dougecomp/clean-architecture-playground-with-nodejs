@@ -20,29 +20,10 @@ export class FastifyHttpServer implements HttpServer {
     this.httpServer.register(cors)
   }
 
-  registerController({ method, route, controller, preController }: RegisterControllerInput): void {
+  registerController({ method, route, controller }: RegisterControllerInput): void {
     this.httpServer.route({
       method: method,
       url: route.replace(/\{|\}/g, ""),
-      preHandler: async (req, res) => {
-        if (preController) {
-          const httpResponse = await preController.handle({
-            ...req.body || {},
-            ...req.query || {},
-            ...req.params || {},
-            ...req.headers || {}
-          })
-          if (httpResponse.statusCode !== 200) {
-            return res
-            .status(httpResponse.statusCode)
-            .send(httpResponse.body)
-          }
-          req.body = {
-            ...req.body || {},
-            ...httpResponse.body
-          }
-        }
-      },
       handler: async (req, res) => {
         const httpResponse = await controller.handle({
           ...req.body || {},
@@ -57,29 +38,10 @@ export class FastifyHttpServer implements HttpServer {
     })
   }
 
-  registerCallback({method, route, callback, preCallback}: RegisterCallbackInput): void {
+  registerCallback({method, route, callback}: RegisterCallbackInput): void {
     this.httpServer.route({
       method: method,
       url: route.replace(/\{|\}/g, ""),
-      preHandler: async (req, res) => {
-        if (preCallback) {
-          const httpResponse = await preCallback(
-            req.body,
-            req.params,
-            req.query,
-            req.headers
-          )
-          if (httpResponse.statusCode !== 200) {
-            return res
-            .status(httpResponse.statusCode)
-            .send(httpResponse.body)
-          }
-          req.body = {
-            ...req.body || {},
-            ...httpResponse.body
-          }
-        }
-      },
       handler: async (req, res) => {
         const response = await callback(req.body || {}, req.params || {}, req.query || {}, req.headers)
         res
