@@ -33,19 +33,18 @@ export class CommanderCommandLineInterface implements CommandLineInterface {
       })
     }
     command.action(async () => {
-      const controller = input.controller
       const controllerInput = {
         ...this.adaptArgsToControllerInput(command.args || []),
         ...command.opts()
       }
-      const response = await controller.handle(controllerInput)
-      if (response.error) {
-        this.program.error(response.error?.message)
+      const controllerResponse = await input.controller.handle(controllerInput)
+      if (controllerResponse.error) {
+        command.error(controllerResponse.error.message)
       }
     })
   }
   
-  start(command: string): void {
-    this.program.parse(command.split(' '), {from: 'user'})
+  async run(command: string): Promise<void> {
+    await this.program.parseAsync(command.split(' '), { from: 'user' })
   }
 }

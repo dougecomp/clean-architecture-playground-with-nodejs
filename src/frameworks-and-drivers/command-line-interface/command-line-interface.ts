@@ -14,5 +14,5 @@ export interface RegisterControllerToCommandLineInterfaceInput {
 
 export interface CommandLineInterface {
   registerController(input: RegisterControllerToCommandLineInterfaceInput): void
-  start(command: string): void
+  run(command: string): Promise<void>
 }
