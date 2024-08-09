@@ -1,24 +1,24 @@
-import { mock } from "vitest-mock-extended"
+import { mock, MockProxy } from "vitest-mock-extended"
 
 import { Command } from "commander"
 
-import { CommanderCommandLineInterface } from "./commander-command-line-interface"
 import { Controller } from "../../interface-adapters/controllers/controller"
+import { CommanderCommandLineInterface } from "./commander-command-line-interface"
 
 suite('Command line interfaces', () => {
+  let controller: MockProxy<Controller>
   let sut: CommanderCommandLineInterface
 
   beforeEach(() => {
+    controller = mock<Controller>()
+    controller.handle.mockResolvedValue({})
     sut = new CommanderCommandLineInterface(
       new Command(),
       'user'
     )
   })
 
-  test('run controller with with only the command name', async () => {
-    const controller = mock<Controller>()
-    controller.handle.mockResolvedValue({ data: { any: 'data'} })
-
+  test('run controller with only the command name', async () => {
     sut.registerController({
       name: 'a_command_name',
       controller
@@ -30,9 +30,6 @@ suite('Command line interfaces', () => {
   })
   
   test('run controller with args', async () => {
-    const controller = mock<Controller>()
-    controller.handle.mockResolvedValue({ data: { any: 'data'} })
-
     sut.registerController({
       name: 'a_command_name',
       controller,
@@ -49,9 +46,6 @@ suite('Command line interfaces', () => {
   })
 
   test('run controller with long boolean option', async () => {
-    const controller = mock<Controller>()
-    controller.handle.mockResolvedValue({ data: { any: 'data'} })
-
     sut.registerController({
       name: 'a_command_name',
       controller,
@@ -71,9 +65,6 @@ suite('Command line interfaces', () => {
   })
 
   test('run controller with short boolean option', async () => {
-    const controller = mock<Controller>()
-    controller.handle.mockResolvedValue({ data: { any: 'data'} })
-
     sut.registerController({
       name: 'a_command_name',
       controller,
@@ -93,9 +84,6 @@ suite('Command line interfaces', () => {
   })
 
   test('run controller with long value option', async () => {
-    const controller = mock<Controller>()
-    controller.handle.mockResolvedValue({ data: { any: 'data'} })
-
     sut.registerController({
       name: 'a_command_name',
       controller,
@@ -115,9 +103,6 @@ suite('Command line interfaces', () => {
   })
 
   test('run controller with short value option', async () => {
-    const controller = mock<Controller>()
-    controller.handle.mockResolvedValue({ data: { any: 'data'} })
-
     sut.registerController({
       name: 'a_command_name',
       controller,
@@ -142,7 +127,6 @@ suite('Command line interfaces', () => {
     const exitSpy = vi
      .spyOn(process, 'exit')
      .mockImplementation(() => ({} as never))
-    const controller = mock<Controller>()
     controller.handle.mockResolvedValue({ error })
 
     sut.registerController({
