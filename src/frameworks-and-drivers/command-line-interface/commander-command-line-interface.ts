@@ -4,7 +4,8 @@ import { CommandLineInterface, RegisterControllerToCommandLineInterfaceInput } f
 
 export class CommanderCommandLineInterface implements CommandLineInterface {
   constructor (
-    private readonly program: Command = new Command()
+    private readonly program: Command = new Command(),
+    private readonly mode: 'user' | 'node' = 'node'
   ) {}
 
   private adaptArgsToControllerInput (args: string[]): object {
@@ -45,6 +46,6 @@ export class CommanderCommandLineInterface implements CommandLineInterface {
   }
   
   async run(command: string): Promise<void> {
-    await this.program.parseAsync(command.split(' '), { from: 'user' })
+    await this.program.parseAsync(command.split(' '), { from: this.mode })
   }
 }
