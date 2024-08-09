@@ -1,4 +1,7 @@
 import { mock } from "vitest-mock-extended"
+
+import { Command } from "commander"
+
 import { CommanderCommandLineInterface } from "./commander-command-line-interface"
 import { Controller } from "../../interface-adapters/controllers/controller"
 
@@ -6,7 +9,10 @@ suite('Command line interfaces', () => {
   let sut: CommanderCommandLineInterface
 
   beforeEach(() => {
-    sut = new CommanderCommandLineInterface()
+    sut = new CommanderCommandLineInterface(
+      new Command(),
+      'user'
+    )
   })
 
   test('run controller with with only the command name', async () => {
