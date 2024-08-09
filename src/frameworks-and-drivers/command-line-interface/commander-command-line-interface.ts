@@ -1,4 +1,4 @@
-import {Command} from 'commander'
+import { Command } from 'commander'
 
 import { CommandLineInterface, RegisterControllerToCommandLineInterfaceInput } from "./command-line-interface";
 
@@ -45,7 +45,14 @@ export class CommanderCommandLineInterface implements CommandLineInterface {
     })
   }
   
-  async run(command: string): Promise<void> {
-    await this.program.parseAsync(command.split(' '), { from: this.mode })
+  async run(command?: string): Promise<void> {
+    await this
+      .program
+      .parseAsync(
+        command ? command.split(' ') : process.argv,
+        {
+          from: this.mode
+        }
+      )
   }
 }
