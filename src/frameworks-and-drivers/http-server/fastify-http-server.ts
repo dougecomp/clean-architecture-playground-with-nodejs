@@ -34,8 +34,7 @@ export class FastifyHttpServer implements HttpServer {
           ...req.params || {},
           ...req.headers || {}
         })
-        const error = controllerResponse.error
-        const data = controllerResponse.data
+        const {error, data} = controllerResponse
         if (error instanceof ServerError) {
           return res
           .status(HTTP_STATUS_CODE.SERVER_ERROR)

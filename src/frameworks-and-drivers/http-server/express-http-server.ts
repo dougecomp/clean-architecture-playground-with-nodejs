@@ -25,8 +25,7 @@ export class ExpressHttpServer implements HttpServer {
         ...req.query as any,
         ...req.headers as any
       })
-      const error = controllerResponse.error
-      const data = controllerResponse.data
+      const {error, data} = controllerResponse
       if (error instanceof ServerError) {
         return res
         .status(HTTP_STATUS_CODE.SERVER_ERROR)

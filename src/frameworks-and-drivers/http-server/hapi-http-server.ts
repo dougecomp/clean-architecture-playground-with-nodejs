@@ -26,8 +26,7 @@ export class HapiHttpServer implements HttpServer {
           ...request.query || {},
           ...request.headers || {}
         })
-        const error = controllerResponse.error
-        const data = controllerResponse.data
+        const {error, data} = controllerResponse
         if (error instanceof ServerError) {
           return response
           .response(controllerResponse.error)
