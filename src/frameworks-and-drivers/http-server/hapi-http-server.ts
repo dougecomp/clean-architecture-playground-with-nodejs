@@ -27,6 +27,7 @@ export class HapiHttpServer implements HttpServer {
           ...request.headers || {}
         })
         const error = controllerResponse.error
+        const data = controllerResponse.data
         if (error instanceof ServerError) {
           return response
           .response(controllerResponse.error)
@@ -40,11 +41,11 @@ export class HapiHttpServer implements HttpServer {
         }
         if (method === 'post') {
           return response
-          .response(controllerResponse.data)
+          .response(data)
           .code(HTTP_STATUS_CODE.CREATED)
         }
         return response
-          .response(controllerResponse.data)
+          .response(data)
           .code(HTTP_STATUS_CODE.OK)
       }
     })
