@@ -34,22 +34,28 @@ export class FastifyHttpServer implements HttpServer {
           ...req.params || {},
           ...req.headers || {}
         })
-        if (controllerResponse.error instanceof ServerError) {
-          res
+        const error = controllerResponse.error
+        if (error instanceof ServerError) {
+          return res
           .status(HTTP_STATUS_CODE.SERVER_ERROR)
-          .send(controllerResponse.error)
+          .send(error)
         }
-        if (controllerResponse.error instanceof UnauthorizedError) {
-          res
+        if (error instanceof UnauthorizedError) {
+          return res
           .status(HTTP_STATUS_CODE.UNAUTHORIZED)
-          .send(controllerResponse.error)        
+          .send(error)        
         }
-        if (controllerResponse.error instanceof Error) {
-          res
+        if (error instanceof Error) {
+          return res
           .status(HTTP_STATUS_CODE.BAD_REQUEST)
-          .send(controllerResponse.error)
+          .send(error)
         }
-        res
+        if (method === 'post') {
+          return res
+          .status(HTTP_STATUS_CODE.CREATED)
+          .send(controllerResponse.data)
+        }
+        return res
         .status(HTTP_STATUS_CODE.OK)
         .send(controllerResponse.data)
       }

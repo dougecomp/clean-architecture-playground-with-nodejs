@@ -26,17 +26,22 @@ export class HapiHttpServer implements HttpServer {
           ...request.query || {},
           ...request.headers || {}
         })
-
-        if (controllerResponse.error instanceof ServerError) {
+        const error = controllerResponse.error
+        if (error instanceof ServerError) {
           return response
           .response(controllerResponse.error)
           .code(HTTP_STATUS_CODE.SERVER_ERROR)
         }
-        if (controllerResponse.error instanceof UnauthorizedError) {
+        if (error instanceof UnauthorizedError) {
           throw unauthorized(controllerResponse.error)
         }
-        if (controllerResponse.error instanceof Error) {
+        if (error instanceof Error) {
           throw badRequest(controllerResponse.error)
+        }
+        if (method === 'post') {
+          return response
+          .response(controllerResponse.data)
+          .code(HTTP_STATUS_CODE.CREATED)
         }
         return response
           .response(controllerResponse.data)
