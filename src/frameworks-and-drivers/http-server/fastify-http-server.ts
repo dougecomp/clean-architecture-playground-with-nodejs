@@ -3,10 +3,8 @@ import { Server } from 'node:http'
 import cors from '@fastify/cors'
 import Fastify, { FastifyInstance } from "fastify"
 
+import { extractHttpResponse } from './helpers'
 import { HttpServer, RegisterControllerInput } from "./http-server"
-import { ServerError } from '../../interface-adapters/errors/server-error'
-import { UnauthorizedError } from '../../interface-adapters/errors/unathorized-error'
-import { HTTP_STATUS_CODE } from '../../interface-adapters/http/helpers'
 
 export class FastifyHttpServer implements HttpServer {
   private httpServer: FastifyInstance
@@ -34,30 +32,14 @@ export class FastifyHttpServer implements HttpServer {
           ...req.params || {},
           ...req.headers || {}
         })
-        const {error, data} = controllerResponse
-        if (error instanceof ServerError) {
-          return res
-          .status(HTTP_STATUS_CODE.SERVER_ERROR)
-          .send(error)
-        }
-        if (error instanceof UnauthorizedError) {
-          return res
-          .status(HTTP_STATUS_CODE.UNAUTHORIZED)
-          .send(error)        
-        }
-        if (error instanceof Error) {
-          return res
-          .status(HTTP_STATUS_CODE.BAD_REQUEST)
-          .send(error)
-        }
-        if (method === 'post') {
-          return res
-          .status(HTTP_STATUS_CODE.CREATED)
-          .send(data)
-        }
+        const {body, statusCode} = extractHttpResponse({
+          data: controllerResponse.data,
+          error: controllerResponse.error,
+          method
+        })
         return res
-        .status(HTTP_STATUS_CODE.OK)
-        .send(data)
+        .status(statusCode)
+        .send(body)
       }
     })
   }

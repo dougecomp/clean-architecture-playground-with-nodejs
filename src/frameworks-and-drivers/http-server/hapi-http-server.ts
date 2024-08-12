@@ -1,12 +1,11 @@
 import { Server } from 'node:http';
 
 import { Server as HapiServer, server } from '@hapi/hapi';
-
-import { HttpServer, RegisterControllerInput } from "./http-server";
-import { ServerError } from '../../interface-adapters/errors/server-error';
-import { UnauthorizedError } from '../../interface-adapters/errors/unathorized-error';
-import { HTTP_STATUS_CODE } from '../../interface-adapters/http/helpers';
 import { badRequest, unauthorized } from '@hapi/boom';
+
+import { HTTP_STATUS_CODE } from '../../interface-adapters/http/helpers';
+import { extractHttpResponse } from './helpers';
+import { HttpServer, RegisterControllerInput } from "./http-server";
 
 export class HapiHttpServer implements HttpServer {
   private httpServer: HapiServer
@@ -26,26 +25,20 @@ export class HapiHttpServer implements HttpServer {
           ...request.query || {},
           ...request.headers || {}
         })
-        const {error, data} = controllerResponse
-        if (error instanceof ServerError) {
-          return response
-          .response(controllerResponse.error)
-          .code(HTTP_STATUS_CODE.SERVER_ERROR)
+        const {body, statusCode} = extractHttpResponse({
+          data: controllerResponse.data,
+          error: controllerResponse.error,
+          method
+        })
+        if (statusCode === HTTP_STATUS_CODE.UNAUTHORIZED) {
+          throw unauthorized(body)
         }
-        if (error instanceof UnauthorizedError) {
-          throw unauthorized(controllerResponse.error)
-        }
-        if (error instanceof Error) {
-          throw badRequest(controllerResponse.error)
-        }
-        if (method === 'post') {
-          return response
-          .response(data)
-          .code(HTTP_STATUS_CODE.CREATED)
+        if (statusCode === HTTP_STATUS_CODE.BAD_REQUEST) {
+          throw badRequest(body)
         }
         return response
-          .response(data)
-          .code(HTTP_STATUS_CODE.OK)
+          .response(body)
+          .code(statusCode)
       }
     })
   }

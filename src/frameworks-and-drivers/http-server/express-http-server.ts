@@ -2,10 +2,8 @@ import { Server } from 'node:http';
 
 import express, { Express, Request, Response } from 'express';
 
+import { extractHttpResponse } from './helpers';
 import { HttpServer, RegisterControllerInput } from "./http-server";
-import { UnauthorizedError } from '../../interface-adapters/errors/unathorized-error';
-import { ServerError } from '../../interface-adapters/errors/server-error';
-import { HTTP_STATUS_CODE } from '../../interface-adapters/http/helpers';
 
 export class ExpressHttpServer implements HttpServer {
   private httpServer: Express
@@ -25,30 +23,14 @@ export class ExpressHttpServer implements HttpServer {
         ...req.query as any,
         ...req.headers as any
       })
-      const {error, data} = controllerResponse
-      if (error instanceof ServerError) {
-        return res
-        .status(HTTP_STATUS_CODE.SERVER_ERROR)
-        .send(error)
-      }
-      if (error instanceof UnauthorizedError) {
-        return res
-        .status(HTTP_STATUS_CODE.UNAUTHORIZED)
-        .send(error)        
-      }
-      if (error instanceof Error) {
-        return res
-        .status(HTTP_STATUS_CODE.BAD_REQUEST)
-        .send(error)
-      }
-      if (method === 'post') {
-        return res
-        .status(HTTP_STATUS_CODE.CREATED)
-        .send(data)
-      }
+      const {body, statusCode} = extractHttpResponse({
+        data: controllerResponse.data,
+        error: controllerResponse.error,
+        method
+      })
       return res
-      .status(HTTP_STATUS_CODE.OK)
-      .send(data)
+      .status(statusCode)
+      .send(body)
     })
   }
 
