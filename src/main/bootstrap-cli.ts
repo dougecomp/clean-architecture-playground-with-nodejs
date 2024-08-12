@@ -1,8 +1,9 @@
-import { CommanderCommandLineInterface } from "../frameworks-and-drivers/command-line-interface/commander-command-line-interface";
 import { setupCommands } from "./commands/commands";
+import { CommanderCommandLineInterfaceFactory } from "./factories/cli/commander-command-line-interface-factory";
 
 async function main () {
-  const cli = new CommanderCommandLineInterface()
+  const cliFactory = new CommanderCommandLineInterfaceFactory()
+  const cli = cliFactory.makeCli()
 
   setupCommands(cli)
 
