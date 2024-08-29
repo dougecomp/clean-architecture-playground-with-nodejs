@@ -3,7 +3,8 @@ import { Server } from 'node:http';
 import { Server as HapiServer, server } from '@hapi/hapi';
 import { badRequest, unauthorized } from '@hapi/boom';
 
-import { HTTP_STATUS_CODE } from '../../interface-adapters/http/helpers';
+import { HTTP_STATUS_CODE } from '@/interface-adapters/http/helpers';
+
 import { extractHttpResponse } from './helpers';
 import { HttpServer, RegisterControllerInput } from "./http-server";
 

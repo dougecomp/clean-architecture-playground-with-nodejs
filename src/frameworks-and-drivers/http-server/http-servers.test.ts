@@ -2,14 +2,15 @@ import { Server } from 'node:http';
 
 import { MockProxy, mock } from "vitest-mock-extended";
 
-import { Controller } from '../../interface-adapters/controllers/controller';
-import { HTTP_VERBS } from '../../interface-adapters/http/helpers';
+import { Controller } from '@/interface-adapters/controllers/controller';
+import { HTTP_VERBS } from '@/interface-adapters/http/helpers';
+import { UnauthorizedError } from '@/interface-adapters/errors/unathorized-error';
+import { ServerError } from '@/interface-adapters/errors/server-error';
+
+import { HttpServer } from "./http-server";
 import { ExpressHttpServer } from "./express-http-server";
 import { FastifyHttpServer } from "./fastify-http-server";
 import { HapiHttpServer } from "./hapi-http-server";
-import { HttpServer } from "./http-server";
-import { UnauthorizedError } from '../../interface-adapters/errors/unathorized-error';
-import { ServerError } from '../../interface-adapters/errors/server-error';
 
 interface MakeRequesToInput {
   method?: HTTP_VERBS

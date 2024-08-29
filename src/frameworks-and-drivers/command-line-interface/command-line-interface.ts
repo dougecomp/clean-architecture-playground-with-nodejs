@@ -1,4 +1,4 @@
-import { Controller } from "../../interface-adapters/controllers/controller"
+import { Controller } from "@/interface-adapters/controllers/controller"
 
 type CommandOptions = {
   long: string

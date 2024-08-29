@@ -3,7 +3,7 @@
     "target": "es2016",
     "module": "commonjs",
     // "rootDir": "src",
-    // "baseUrl": "./",
+    // "baseUrl": "src",
     // "paths": {},
     // "rootDirs": [],
     // "typeRoots": [],
@@ -12,7 +12,10 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": [
     "src/**/*"

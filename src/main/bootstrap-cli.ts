@@ -1,5 +1,5 @@
-import { setupCommands } from "./commands/commands";
-import { CommanderCommandLineInterfaceFactory } from "./factories/cli/commander-command-line-interface-factory";
+import { setupCommands } from "@/main/commands/commands";
+import { CommanderCommandLineInterfaceFactory } from "@/main/factories/cli/commander-command-line-interface-factory";
 
 async function main () {
   const cliFactory = new CommanderCommandLineInterfaceFactory()

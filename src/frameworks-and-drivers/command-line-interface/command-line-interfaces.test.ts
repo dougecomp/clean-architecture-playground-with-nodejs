@@ -2,7 +2,8 @@ import { mock, MockProxy } from "vitest-mock-extended"
 
 import { Command } from "commander"
 
-import { Controller } from "../../interface-adapters/controllers/controller"
+import { Controller } from "@/interface-adapters/controllers/controller"
+
 import { CommanderCommandLineInterface } from "./commander-command-line-interface"
 
 suite('Command line interfaces', () => {

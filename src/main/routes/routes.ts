@@ -1,6 +1,6 @@
-import { HTTP_VERBS } from "../../interface-adapters/http/helpers";
-import { HttpServer } from "../../frameworks-and-drivers/http-server/http-server";
-import { makeHelloWorldController } from "../factories/controllers/hello-world-factory";
+import { HTTP_VERBS } from "@/interface-adapters/http/helpers";
+import { HttpServer } from "@/frameworks-and-drivers/http-server/http-server";
+import { makeHelloWorldController } from "@/main/factories/controllers/hello-world-factory";
 
 export function setupRoutes (httpServer: HttpServer) {
   httpServer.registerController({

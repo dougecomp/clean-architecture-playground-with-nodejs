@@ -1,6 +1,6 @@
-import { ServerError } from "../../interface-adapters/errors/server-error";
-import { UnauthorizedError } from "../../interface-adapters/errors/unathorized-error";
-import { HTTP_STATUS_CODE, HTTP_VERBS } from "../../interface-adapters/http/helpers";
+import { ServerError } from "@/interface-adapters/errors/server-error";
+import { UnauthorizedError } from "@/interface-adapters/errors/unathorized-error";
+import { HTTP_STATUS_CODE, HTTP_VERBS } from "@/interface-adapters/http/helpers";
 
 type ExtractHttpResponse = {
   error?: any
