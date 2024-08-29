@@ -1,8 +1,8 @@
-export type ControllerOutput<T = any> = {
-  data?: T
+export type ControllerOutput = {
+  data?: any
   error?: Error
 }
 
-export interface Controller<T = any, U = any> {
-  handle(input: T): Promise<ControllerOutput<U>>
+export interface Controller<T = any> {
+  handle(input: T): Promise<ControllerOutput>
 }
