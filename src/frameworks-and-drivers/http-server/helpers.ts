@@ -3,28 +3,32 @@ import { UnauthorizedError } from "../../interface-adapters/errors/unathorized-e
 import { HTTP_STATUS_CODE, HTTP_VERBS } from "../../interface-adapters/http/helpers";
 
 type ExtractHttpResponse = {
-  error: any
-  data: any
-  method?: HTTP_VERBS
+  error?: any
+  data?: any
+  method: HTTP_VERBS
 }
 
 export function extractHttpResponse (input: ExtractHttpResponse) {
   const {error, data, method} = input
+  const errorData = {
+    name: error?.name,
+    message: error?.message
+  }
   if (error instanceof ServerError) {
     return {
-      body: error,
+      body: errorData,
       statusCode: HTTP_STATUS_CODE.SERVER_ERROR
     }
   }
   if (error instanceof UnauthorizedError) {
     return {
-      body: error,
+      body: errorData,
       statusCode: HTTP_STATUS_CODE.UNAUTHORIZED
     }
   }
   if (error instanceof Error) {
     return {
-      body: error,
+      body: errorData,
       statusCode: HTTP_STATUS_CODE.BAD_REQUEST
     }
   }
